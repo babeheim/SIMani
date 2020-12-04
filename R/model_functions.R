@@ -2,10 +2,10 @@
 increment_age <- function(people) {
   if (!"age_today" %in% names(people)) stop("age_today does not exist")
   if (any(is.na(people$age_today))) stop("age_today has missing values")
-  if (!"is_dead" %in% names(people)) stop("is_dead does not exist")
-  if (any(is.na(people$is_dead))) stop("is_dead has missing values")
-  if (any(!people$is_dead)) {
-    people$age_today[!people$is_dead] <- people$age_today[!people$is_dead] + 1
+  if (!"is_alive" %in% names(people)) stop("is_alive does not exist")
+  if (any(is.na(people$is_alive))) stop("is_alive has missing values")
+  if (any(people$is_alive)) {
+    people$age_today[people$is_alive] <- people$age_today[people$is_alive] + 1
   }
   return(people)
 }
@@ -17,7 +17,7 @@ add_immigrants <- function(people, day, n_immigrants = NA) {
     new_person <- vector("list", ncol(people))
     names(new_person) <- names(people)
     for (i in seq_along(new_person)) new_person[[i]] <- NA
-    new_person$is_dead <- FALSE
+    new_person$is_alive <- TRUE
     new_person$is_present <- TRUE
     for (i in 1:n_immigrants) {
       immigrants[[i]] <- new_person
@@ -34,7 +34,7 @@ add_immigrants <- function(people, day, n_immigrants = NA) {
 
 select_emigrants <- function(people, day, emi_rows = NA) {
   # choose emigrants probabilistically
-  active_rows <- which(!people$is_dead & people$is_present)
+  active_rows <- which(people$is_alive & people$is_present)
   baseline <- 0.001
   alpha <- log(baseline/(1 - baseline))
   daily_pr_emigrate <- (1 - (1/(1 + exp(alpha))))
@@ -54,7 +54,7 @@ select_emigrants <- function(people, day, emi_rows = NA) {
 
 select_fatalities <- function(people, day, kill_rows = NA) {
   # choose deaths probabilistically
-  active_rows <- which(!people$is_dead)
+  active_rows <- which(people$is_alive & people$is_present)
   if (length(active_rows) > 0) {
     baseline <- 0.001
     alpha <- log(baseline/(1 - baseline))
@@ -69,7 +69,7 @@ select_fatalities <- function(people, day, kill_rows = NA) {
     }
     if (length(died_rows) > 0) {
       people$date_of_death[died_rows] <- day
-      people$is_dead[died_rows] <- TRUE
+      people$is_alive[died_rows] <- FALSE
     }
   }
   return(people)
