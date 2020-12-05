@@ -1,4 +1,8 @@
 
+test_that("sample_safe works correctly", {
+  expect_true(all(sample_safe(c(100), 1000, replace = TRUE) == 100))
+})
+
 test_that("increment_age function works", {
 
   test <- list(
@@ -85,7 +89,7 @@ test_that("select_fatalities works", {
 
 
 
-test_that("find_mates works", {
+test_that("select_mates works", {
 
   test <- list(
     list(current_mate = NA, female = TRUE, age_today = 15, is_present = TRUE),
@@ -94,7 +98,7 @@ test_that("find_mates works", {
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% find_mates()
+  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
   expect_true(!any(is.na(test$current_mate)))
 
   test2 <- list(
@@ -102,7 +106,7 @@ test_that("find_mates works", {
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% find_mates()
+  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
   expect_true(sum(is.na(test2$current_mate)) == 2)
 
   test3 <- list(
@@ -110,7 +114,7 @@ test_that("find_mates works", {
     list(current_mate = NA, female = TRUE, age_today = 15, is_present = TRUE),
     list(current_mate = NA, female = TRUE, age_today = 15, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% find_mates()
+  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
   expect_true(sum(is.na(test3$current_mate)) == 2)
 
   test4 <- list(
@@ -120,7 +124,7 @@ test_that("find_mates works", {
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% find_mates()
+  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
   expect_true(sum(is.na(test4$current_mate)) == 4)
   expect_true(is.na(test4$current_mate[2]))
   expect_true(is.na(test4$current_mate[3]))
@@ -132,7 +136,7 @@ test_that("find_mates works", {
     list(current_mate = NA, female = FALSE, age_today = 14, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 14, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% find_mates()
+  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
   expect_true(sum(is.na(test5$current_mate)) == 4)
   expect_true(is.na(test5$current_mate[4]))
   expect_true(is.na(test5$current_mate[5]))
@@ -144,7 +148,7 @@ test_that("find_mates works", {
     list(current_mate = NA, female = FALSE, age_today = 14, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 14, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 14, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% find_mates()
+  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
   expect_true(all(is.na(test6$current_mate)))
 
   test7 <- list(
@@ -154,7 +158,7 @@ test_that("find_mates works", {
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% find_mates()
+  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
   expect_true(all(is.na(test7$current_mate)))
 
   test8 <- list(
@@ -164,7 +168,7 @@ test_that("find_mates works", {
     list(current_mate = 1, female = FALSE, age_today = 15, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE),
     list(current_mate = NA, female = FALSE, age_today = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% find_mates()
+  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
   expect_true(!any(is.na(test8$current_mate)))
   expect_true(test8$current_mate[1] == 4)
   expect_true(test8$current_mate[4] == 1)

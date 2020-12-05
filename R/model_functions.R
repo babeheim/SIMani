@@ -1,6 +1,10 @@
 
-# safer than sample() when there's only one item in the bag
-sample_safe <- function(x, ...) x[sample.int(length(x), ...)]
+
+
+# sample() when only one item in the bag
+sample_safe <- function(x, ...) {
+  x[sample.int(length(x), ...)]
+}
 
 increment_age <- function(people) {
   if (!"age_today" %in% names(people)) stop("age_today does not exist")
@@ -73,12 +77,14 @@ select_fatalities <- function(people, day, kill_rows = NA) {
     if (length(died_rows) > 0) {
       people$date_of_death[died_rows] <- day
       people$is_alive[died_rows] <- FALSE
+      people$current_mate[died_rows] <- NA
+      people$current_mate[people$current_mate %in% died_rows] <- NA
     }
   }
   return(people)
 }
 
-find_mates <- function(people) {
+select_mates <- function(people) {
   # in this version, women choose men
   available_women <- which(is.na(people$current_mate) &
     people$age_today >= 15 & people$female & people$is_present)
@@ -99,4 +105,14 @@ find_mates <- function(people) {
     }
   }
   return(people)
+}
+
+select_conceptions <- function(people) {
+  available_women <- which(people$female & people$age_today <= 45 &
+    people$age_today >= 15 & !is.na(people$current_mate))
+  baseline <- 0.001
+  alpha <- log(baseline / (1 - baseline))
+  pr_concieve <- (1 - (1 / (1 + exp(alpha))))
+  concieved <- as.logical(rbinom(length(available_women), 1, pr_concieve))
+  conception_rows <- available_women[concieved]
 }
