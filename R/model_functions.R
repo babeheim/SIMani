@@ -1,4 +1,7 @@
 
+# safer than sample() when there's only one item in the bag
+sample_safe <- function(x, ...) x[sample.int(length(x), ...)]
+
 increment_age <- function(people) {
   if (!"age_today" %in% names(people)) stop("age_today does not exist")
   if (any(is.na(people$age_today))) stop("age_today has missing values")
@@ -70,6 +73,29 @@ select_fatalities <- function(people, day, kill_rows = NA) {
     if (length(died_rows) > 0) {
       people$date_of_death[died_rows] <- day
       people$is_alive[died_rows] <- FALSE
+    }
+  }
+  return(people)
+}
+
+find_mates <- function(people) {
+  # in this version, women choose men
+  available_women <- which(is.na(people$current_mate) &
+    people$age_today >= 15 & people$female & people$is_present)
+  available_men <- which(is.na(people$current_mate) &
+    people$age_today >= 15 & !people$female & people$is_present)
+  # random reindex to avoid any kind of order bias in mating
+  available_women <- available_women[sample(length(available_women))]
+  if (length(available_women) > 0 & length(available_men) > 0) {
+    for (i in seq_along(available_women)) {
+      if (length(available_men) > 0) {
+        focal_woman <- available_women[i]
+        pr_choose_man <- rep(1, length(available_men))
+        chosen_man <- sample_safe(available_men, 1, prob = pr_choose_man)
+        people$current_mate[focal_woman] <- chosen_man
+        people$current_mate[chosen_man] <- focal_woman
+        available_men <- setdiff(available_men, chosen_man)
+      }
     }
   }
   return(people)

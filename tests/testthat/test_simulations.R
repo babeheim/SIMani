@@ -13,6 +13,9 @@ test_that("a simple simulation works", {
       increment_age() %>%
       select_fatalities(day = day) %>%
       select_emigrants(day = day) %>%
+      # find_mates() %>%
+      # concieve_offspring() %>%
+      # add_offspring %>%
       add_immigrants(day = day) -> people
   })
 
