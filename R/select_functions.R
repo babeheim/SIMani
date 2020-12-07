@@ -72,7 +72,7 @@ select_mates <- function(people) {
 }
 
 select_conceptions <- function(people, current_tic, manual = NULL,
-  calc_fertility = calc_fertility_basic, days_tic = 1) {
+  calc_fertility = calc_fertility_basic, tic_length = 1) {
   conceptions <- integer(0)
   candidate_women <- which(people$female & people$age < 50 & people$age >= 15 &
     !is.na(people$current_mate) & is.na(people$due_date))
@@ -89,7 +89,7 @@ select_conceptions <- function(people, current_tic, manual = NULL,
   }
   # update people table based on all of above
   if (length(conceptions) > 0) {
-    people$due_date[conceptions] <- current_tic + 270 # assumes one day per tic
+    people$due_date[conceptions] <- current_tic + 270 * tic_length # assumes one day per tic
   }
   return(people)
 }

@@ -1,4 +1,13 @@
 
+test_that("logistic and logit work correctly", {
+  expect_silent(x <- logistic(rnorm(10000, 0, 10)))
+  expect_true(all(x >= 0 & x <= 1))
+  expect_silent(x <- logit(runif(10000, 0, 1)))
+  expect_true(min(x) > -50 & max(x) < 50)
+  expect_true(logistic(Inf) == 1)
+  expect_true(logistic(-Inf) == 0)
+})
+
 test_that("sample_safe works correctly", {
   expect_true(all(sample_safe(c(100), 1000, replace = TRUE) == 100))
 })

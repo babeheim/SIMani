@@ -5,8 +5,8 @@ calc_fertility_basic <- function(base_rate = 0.001, ...) {
   return(log_odds)
 }
 
-calc_fertility_usa <- function(ages, days_tic = 1, ...) {
-  years_tic <- (days_tic / 365)
+calc_fertility_usa <- function(ages, tic_length = 1, ...) {
+  years_tic <- (tic_length / 365)
   list(
     list(age_cat = "[0, 15)",   annual_births_perthou = 0),
     list(age_cat = "[15, 20)",  annual_births_perthou = 40.47),
@@ -18,7 +18,7 @@ calc_fertility_usa <- function(ages, days_tic = 1, ...) {
     list(age_cat = "[45, 50)",  annual_births_perthou = 0.58),
     list(age_cat = "[50, 120)", annual_births_perthou = 0)
   ) %>% bind_rows() -> asfr # age-specific fertility rates
-  age_cutoffs <- c(0, 15, 20, 25, 30, 35, 40, 45, 50, 120) # (15,19], (20,24], etc.
+  age_cutoffs <- c(0, 15, 20, 25, 30, 35, 40, 45, 50, 120)
   age_rows <- cut(ages, age_cutoffs, right = FALSE, labels = FALSE)
   annual_pr_event <- asfr$annual_births_perthou[age_rows] / 1000
   pr_event_per_tic <- annual_pr_event * years_tic
@@ -32,8 +32,8 @@ calc_mortality_basic <- function(base_rate = 0.001) {
   return(log_odds)
 }
 
-calc_mortality_usa <- function(ages, days_tic = 1, ...) {
-  years_tic <- (days_tic / 365)
+calc_mortality_usa <- function(ages, tic_length = 1, ...) {
+  years_tic <- (tic_length / 365)
   list(
     list(age_cat = "[0, 1)",  annual_deaths_perthou = 6.54),
     list(age_cat = "[1, 5)",  annual_deaths_perthou = 0.29),
@@ -58,9 +58,9 @@ calc_mortality_usa <- function(ages, days_tic = 1, ...) {
     list(age_cat = "[95, 100)", annual_deaths_perthou = 276.56),
     list(age_cat = "[100, 120)", annual_deaths_perthou = 438.92)
   ) %>% bind_rows() -> asmr # age-specific mortality rates
-  age_cutoffs <- c(0, 1, seq(5, 100, 5), 120) # (15,19], (20,24], etc.
+  age_cutoffs <- c(0, 1, seq(5, 100, 5), 120)
   age_rows <- cut(ages, age_cutoffs, right = FALSE, labels = FALSE)
-  annual_pr_event <- asfr$annual_deaths_perthou[age_rows] / 1000
+  annual_pr_event <- asmr$annual_deaths_perthou[age_rows] / 1000
   pr_event_per_tic <- annual_pr_event * years_tic
   log_odds <- logit(pr_event_per_tic)
   return(log_odds)

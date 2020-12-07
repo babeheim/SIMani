@@ -1,4 +1,4 @@
-- add_immigrants needs to know how long a tic is!
-- select_conceptions needs to know how long a tic is!
-- add an `update_traits` function that can be quite flexible [riana]
-- incorporate a calc_attractiveness function into select_mates, and also allow for bilateral decisions (e.g. both swipe right) [riana]
+- run some scenarios in test_simulations to identify slowdowns
+- add an `update_traits` function that can be quite flexible
+- incorporate a calc_attractiveness function into select_mates
+- incorporate bilateral decisions in select_mates (e.g. both partners swipe right)
