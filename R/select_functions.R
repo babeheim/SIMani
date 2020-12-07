@@ -1,5 +1,5 @@
 
-select_emigrants <- function(people, manual = NA, emi_fun = calc_emigration_basic) {
+select_emigrants <- function(people, manual = NA, calc_emigration = calc_emigration_basic) {
   active_people <- which(people$is_alive & people$is_present)
   if (length(active_people) > 0) {
     emigrants <- integer(0)
@@ -9,7 +9,7 @@ select_emigrants <- function(people, manual = NA, emi_fun = calc_emigration_basi
       emigrants <- c(emigrants, manual)
     }
     # choose emigrants probabilistically
-    logit_pr_emigrate <- emi_fun(active_people, people)
+    logit_pr_emigrate <- calc_emigration()
     emigrated <- rbinom(length(active_people), 1, logistic(logit_pr_emigrate))
     emigrants <- c(emigrants, active_people[emigrated]) 
     # now update people table based on emigration decisions
@@ -32,7 +32,7 @@ select_fatalities <- function(people, current_tic, manual = NA, calc_mortality =
       if (!all(manual %in% active_people)) stop("only active people can die")
       fatalities <- c(fatalities, manual)
     }
-    logit_pr_die <- calc_mortality(active_people, people)
+    logit_pr_die <- calc_mortality()
     died <- as.logical(rbinom(length(active_people), 1, logistic(logit_pr_die)))
     fatalities <- c(fatalities, active_people[died])
     # add additional deaths to test
@@ -69,7 +69,6 @@ select_mates <- function(people) {
   return(people)
 }
 
-
 select_conceptions <- function(people, current_tic, manual = NA, calc_conception = calc_conception_basic) {
   candidate_women <- which(people$female & people$age <= 45 &
     people$age >= 15 & !is.na(people$current_mate))
@@ -77,11 +76,11 @@ select_conceptions <- function(people, current_tic, manual = NA, calc_conception
     conceptions <- integer(0)
     # specify manual conceptions for testing
     if (!all(is.na(manual))) {
-      if (!all(manual %in% active_people)) stop("only active people can die")
+      if (!all(manual %in% candidate_women)) stop("only fertile, mated women can conceive")
       conceptions <- c(conceptions, manual)
     }
     # select conceptions probabilistically
-    logit_pr_concieve <- calc_conception(candidate_women, people)
+    logit_pr_concieve <- calc_conception()
     concieved <- rbinom(length(candidate_women), 1, logistic(logit_pr_concieve))
     conceptions <- c(conceptions, candidate_women[concieved])
     # update people table based on above

@@ -10,6 +10,8 @@ logistic <- function (x) {
   return(p)
 }
 
+logit <- function(x) log(x) - log(1 - x)
+
 inspect_people <- function(people) {
   if (!"age" %in% names(people)) stop("age does not exist")
   if (!"date_of_birth" %in% names(people)) stop("dob does not exist")

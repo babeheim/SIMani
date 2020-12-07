@@ -1,6 +1,27 @@
 
 
 
+test_that("select_conceptions works", {
+
+  test <- list(
+    list(current_mate = 4, female = TRUE, age = 15, due_date = NA),
+    list(current_mate = 5, female = TRUE, age = 15, due_date = NA),
+    list(current_mate = 6, female = TRUE, age = 15, due_date = NA),
+    list(current_mate = 1, female = FALSE, age = 15),
+    list(current_mate = 2, female = FALSE, age = 15),
+    list(current_mate = 3, female = FALSE, age = 15)
+  ) %>% bind_rows() %>% as.data.frame()
+
+  test <- select_conceptions(test, 1, 1)
+  expect_true(!is.na(test$due_date[1]))
+  test <- select_conceptions(test, 1, c(2, 3))
+  expect_true(!any(is.na(test$due_date[2:3])))
+  expect_error(select_conceptions(test, 1, c(4, 5, 6)))
+ 
+})
+
+
+
 test_that("select_emigrants works", {
 
   test <- list(

@@ -1,26 +1,20 @@
 
-calc_conception_basic <- function(women, people) {
-  baseline <- 0.001
-  alpha <- log(baseline / (1 - baseline))
-  # linear model goes here
-  log_odds_concieve <- alpha
-  return(log_odds_concieve)
+calc_conception_basic <- function(base_rate = 0.001, ...) {
+  alpha <- log(base_rate / (1 - base_rate))
+  log_odds <- alpha
+  return(log_odds)
 }
 
-calc_mortality_basic <- function(active_people, people) {
-  baseline <- 0.001
-  alpha <- log(baseline / (1 - baseline))
-  # linear model goes here
-  log_odds_concieve <- alpha
-  return(log_odds_concieve)
+calc_mortality_basic <- function(base_rate = 0.001) {
+  alpha <- log(base_rate / (1 - base_rate))
+  log_odds <- alpha
+  return(log_odds)
 }
 
-calc_emigration_basic <- function(active, people) {
-  baseline <- 0.001
-  alpha <- log(baseline/(1 - baseline))
-  # linear model goes here
-  log_odds_death <- alpha
-  return(log_odds_death)
+calc_emigration_basic <- function(base_rate = 0.001) {
+  alpha <- log(base_rate / (1 - base_rate))
+  log_odds <- alpha
+  return(log_odds)
 }
 
 # what do I want this to do exactly?
@@ -31,6 +25,7 @@ calc_fertility_usa <- function(n_draws, ...) {
 
 
 calc_age_usa <- function(n_draws, ...) {
+# probably there's an elegant way to write an equation instead!
   list(
     list(age = 0, weight = 57),
     list(age = 1, weight = 74),
@@ -143,6 +138,6 @@ calc_age_offspring <- function(n_draws, ...) {
   0
 }
 
-calc_age_simple <- function(n_draws, ...) {
+calc_age_basic <- function(n_draws, ...) {
   rpois(n_draws, 10)
 }
