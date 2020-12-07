@@ -1,12 +1,12 @@
 
-generate_person <- function(people, calc_age) {
+generate_person <- function(people, calc_age = calc_age_basic) {
   new_person <- vector("list", ncol(people))
   names(new_person) <- names(people)
   for (i in seq_along(new_person)) new_person[[i]] <- NA
   new_person$is_alive <- TRUE
   new_person$is_present <- TRUE
   new_person$female <- rbinom(1, 1, 0.5)
-  new_person$age <- calc_age(1, new_person)
+  new_person$age <- calc_age(1, new_person) # in years
   return(new_person)
 }
 

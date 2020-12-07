@@ -1,47 +1,49 @@
 
-select_emigrants <- function(people, manual = NA, calc_emigration = calc_emigration_basic) {
+select_emigrants <- function(people, manual = NULL, calc_emigration = calc_emigration_basic) {
+  emigrants <- integer(0)
   active_people <- which(people$is_alive & people$is_present)
+  # specify manual emigrations for testing
+  if (!is.null(manual)) {
+    if (!all(manual %in% active_people)) stop("only active people can emigrate")
+    emigrants <- c(emigrants, manual)
+  }
+  # choose emigrants probabilistically
   if (length(active_people) > 0) {
-    emigrants <- integer(0)
-    # specify manual emigrations for testing
-    if (!all(is.na(manual))) {
-      if (!all(manual %in% active_people)) stop("only active people can emigrate")
-      emigrants <- c(emigrants, manual)
-    }
-    # choose emigrants probabilistically
     logit_pr_emigrate <- calc_emigration()
     emigrated <- rbinom(length(active_people), 1, logistic(logit_pr_emigrate))
     emigrants <- c(emigrants, active_people[emigrated]) 
-    # now update people table based on emigration decisions
-    if (length(emigrants) > 0) {
-      people$is_present[emigrants] <- FALSE
-      # currently emigrants dont go with relatives, but we can change
-      people$current_mate[emigrants] <- NA
-      people$current_mate[which(people$current_mate %in% emigrants)] <- NA
-    }
+  }
+  # update people table based on all of above
+  if (length(emigrants) > 0) {
+    people$is_present[emigrants] <- FALSE
+    # currently emigrants dont go with relatives, but we can change
+    people$current_mate[emigrants] <- NA
+    people$current_mate[which(people$current_mate %in% emigrants)] <- NA
   }
   return(people)
 }
 
-select_fatalities <- function(people, current_tic, manual = NA, calc_mortality = calc_mortality_basic) {
+select_fatalities <- function(people, current_tic, manual = NULL,
+  calc_mortality = calc_mortality_basic) {
+  fatalities <- integer(0)
   active_people <- which(people$is_alive & people$is_present)
+  # specify manual fatalities for testing
+  if (!is.null(manual)) {
+    if (!all(manual %in% active_people)) stop("only active people can die")
+    fatalities <- c(fatalities, manual)
+  }
+  # select fatalities probabilistically
   if (length(active_people) > 0) {
-    fatalities <- integer(0)
-    # specify manual fatalities for testing
-    if (!all(is.na(manual))) {
-      if (!all(manual %in% active_people)) stop("only active people can die")
-      fatalities <- c(fatalities, manual)
-    }
     logit_pr_die <- calc_mortality()
     died <- as.logical(rbinom(length(active_people), 1, logistic(logit_pr_die)))
     fatalities <- c(fatalities, active_people[died])
-    # add additional deaths to test
-    if (length(fatalities) > 0) {
-      people$date_of_death[fatalities] <- current_tic
-      people$is_alive[fatalities] <- FALSE
-      people$current_mate[fatalities] <- NA
-      people$current_mate[which(people$current_mate %in% fatalities)] <- NA
-    }
+  }
+  # update people table based on all of above
+  if (length(fatalities) > 0) {
+    people$date_of_death[fatalities] <- current_tic
+    people$is_alive[fatalities] <- FALSE
+    people$current_mate[fatalities] <- NA
+    people$current_mate[which(people$current_mate %in% fatalities)] <- NA
   }
   return(people)
 }
@@ -69,24 +71,25 @@ select_mates <- function(people) {
   return(people)
 }
 
-select_conceptions <- function(people, current_tic, manual = NA, calc_conception = calc_conception_basic) {
-  candidate_women <- which(people$female & people$age <= 45 &
-    people$age >= 15 & !is.na(people$current_mate))
+select_conceptions <- function(people, current_tic, manual = NULL,
+  calc_fertility = calc_fertility_basic, days_tic = 1) {
+  conceptions <- integer(0)
+  candidate_women <- which(people$female & people$age < 50 & people$age >= 15 &
+    !is.na(people$current_mate) & is.na(people$due_date))
+  # select manual conceptions for testing
+  if (!is.null(manual)) {
+    if (!all(manual %in% candidate_women)) stop("only fertile, mated women can conceive")
+    conceptions <- c(conceptions, manual)
+  }
+  # select conceptions probabilistically
   if (length(candidate_women) > 0) {
-    conceptions <- integer(0)
-    # specify manual conceptions for testing
-    if (!all(is.na(manual))) {
-      if (!all(manual %in% candidate_women)) stop("only fertile, mated women can conceive")
-      conceptions <- c(conceptions, manual)
-    }
-    # select conceptions probabilistically
-    logit_pr_concieve <- calc_conception()
+    logit_pr_concieve <- calc_fertility()
     concieved <- rbinom(length(candidate_women), 1, logistic(logit_pr_concieve))
     conceptions <- c(conceptions, candidate_women[concieved])
-    # update people table based on above
-    if (length(conceptions) > 0) {
-      people$due_date[conceptions] <- current_tic + 30 * 9 # assumes one day per tic
-    }
+  }
+  # update people table based on all of above
+  if (length(conceptions) > 0) {
+    people$due_date[conceptions] <- current_tic + 270 # assumes one day per tic
   }
   return(people)
 }

@@ -1,8 +1,4 @@
-- add current_tic into the people table? that's not tidy...
+- add_immigrants needs to know how long a tic is!
 - select_conceptions needs to know how long a tic is!
-- add specific tests to differentiate generate_person and generate_people, including calc_age tests [bret]
-- add tests for the calc_age functions [bret]
-- specify `tic` units (days, years, etc. to calculate rates effectively) [bret]
 - add an `update_traits` function that can be quite flexible [riana]
-- make `calc_fertility_agespec`, `calc_mortality_agespec`, etc. age-specific fertility and mortality, including mortality and fertility schedules
 - incorporate a calc_attractiveness function into select_mates, and also allow for bilateral decisions (e.g. both swipe right) [riana]

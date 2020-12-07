@@ -1,42 +1,90 @@
 
-calc_conception_basic <- function(base_rate = 0.001, ...) {
-  alpha <- log(base_rate / (1 - base_rate))
+calc_fertility_basic <- function(base_rate = 0.001, ...) {
+  alpha <- logit(base_rate)
   log_odds <- alpha
+  return(log_odds)
+}
+
+calc_fertility_usa <- function(ages, days_tic = 1, ...) {
+  years_tic <- (days_tic / 365)
+  list(
+    list(age_cat = "[0, 15)",   annual_births_perthou = 0),
+    list(age_cat = "[15, 20)",  annual_births_perthou = 40.47),
+    list(age_cat = "[20, 25)",  annual_births_perthou = 102.5),
+    list(age_cat = "[25, 30)",  annual_births_perthou = 115.92),
+    list(age_cat = "[30, 35)",  annual_births_perthou = 96.1),
+    list(age_cat = "[35, 40)",  annual_births_perthou = 46.36),
+    list(age_cat = "[40, 45)",  annual_births_perthou = 9.12),
+    list(age_cat = "[45, 50)",  annual_births_perthou = 0.58),
+    list(age_cat = "[50, 120)", annual_births_perthou = 0)
+  ) %>% bind_rows() -> asfr # age-specific fertility rates
+  age_cutoffs <- c(0, 15, 20, 25, 30, 35, 40, 45, 50, 120) # (15,19], (20,24], etc.
+  age_rows <- cut(ages, age_cutoffs, right = FALSE, labels = FALSE)
+  annual_pr_event <- asfr$annual_births_perthou[age_rows] / 1000
+  pr_event_per_tic <- annual_pr_event * years_tic
+  log_odds <- logit(pr_event_per_tic)
   return(log_odds)
 }
 
 calc_mortality_basic <- function(base_rate = 0.001) {
-  alpha <- log(base_rate / (1 - base_rate))
+  alpha <- logit(base_rate)
   log_odds <- alpha
+  return(log_odds)
+}
+
+calc_mortality_usa <- function(ages, days_tic = 1, ...) {
+  years_tic <- (days_tic / 365)
+  list(
+    list(age_cat = "[0, 1)",  annual_deaths_perthou = 6.54),
+    list(age_cat = "[1, 5)",  annual_deaths_perthou = 0.29),
+    list(age_cat = "[5, 10)",  annual_deaths_perthou = 0.14),
+    list(age_cat = "[10, 15)", annual_deaths_perthou = 0.18),
+    list(age_cat = "[15, 20)", annual_deaths_perthou = 0.64),
+    list(age_cat = "[20, 25)", annual_deaths_perthou = 0.91),
+    list(age_cat = "[25, 30)", annual_deaths_perthou = 0.9),
+    list(age_cat = "[30, 35)", annual_deaths_perthou = 1.06),
+    list(age_cat = "[35, 40)", annual_deaths_perthou = 1.53),
+    list(age_cat = "[40, 45)", annual_deaths_perthou = 2.31),
+    list(age_cat = "[45, 50)", annual_deaths_perthou = 3.41),
+    list(age_cat = "[50, 55)", annual_deaths_perthou = 4.93),
+    list(age_cat = "[55, 60)", annual_deaths_perthou = 7.42),
+    list(age_cat = "[60, 65)", annual_deaths_perthou = 11.5),
+    list(age_cat = "[65, 70)", annual_deaths_perthou = 17.8),
+    list(age_cat = "[70, 75)", annual_deaths_perthou = 27.71),
+    list(age_cat = "[75, 80)", annual_deaths_perthou = 43.5),
+    list(age_cat = "[80, 85)", annual_deaths_perthou = 69.58),
+    list(age_cat = "[85, 90)", annual_deaths_perthou = 110.56),
+    list(age_cat = "[90, 95)", annual_deaths_perthou = 174.77),
+    list(age_cat = "[95, 100)", annual_deaths_perthou = 276.56),
+    list(age_cat = "[100, 120)", annual_deaths_perthou = 438.92)
+  ) %>% bind_rows() -> asmr # age-specific mortality rates
+  age_cutoffs <- c(0, 1, seq(5, 100, 5), 120) # (15,19], (20,24], etc.
+  age_rows <- cut(ages, age_cutoffs, right = FALSE, labels = FALSE)
+  annual_pr_event <- asfr$annual_deaths_perthou[age_rows] / 1000
+  pr_event_per_tic <- annual_pr_event * years_tic
+  log_odds <- logit(pr_event_per_tic)
   return(log_odds)
 }
 
 calc_emigration_basic <- function(base_rate = 0.001) {
-  alpha <- log(base_rate / (1 - base_rate))
+  alpha <- logit(base_rate)
   log_odds <- alpha
   return(log_odds)
 }
 
-# what do I want this to do exactly?
-calc_fertility_usa <- function(n_draws, ...) {
-  ages <- c(15, 20, 25, 30, 35, 40, 45)
-  annual_births_per_1000 <- c(40.47, 102.5, 115.92, 96.1, 46.36, 9.12, 0.58)
-}
-
-
 calc_age_usa <- function(n_draws, ...) {
 # probably there's an elegant way to write an equation instead!
   list(
-    list(age = 0, weight = 57),
-    list(age = 1, weight = 74),
-    list(age = 2, weight = 68),
-    list(age = 3, weight = 77),
-    list(age = 4, weight = 65),
-    list(age = 5, weight = 75),
-    list(age = 6, weight = 79),
-    list(age = 7, weight = 83),
-    list(age = 8, weight = 66),
-    list(age = 9, weight = 60),
+    list(age = 0,  weight = 57),
+    list(age = 1,  weight = 74),
+    list(age = 2,  weight = 68),
+    list(age = 3,  weight = 77),
+    list(age = 4,  weight = 65),
+    list(age = 5,  weight = 75),
+    list(age = 6,  weight = 79),
+    list(age = 7,  weight = 83),
+    list(age = 8,  weight = 66),
+    list(age = 9,  weight = 60),
     list(age = 10, weight = 80),
     list(age = 11, weight = 72),
     list(age = 12, weight = 59),
@@ -128,6 +176,8 @@ calc_age_usa <- function(n_draws, ...) {
     list(age = 98, weight = 2),
     list(age = 99, weight = 4)
   ) %>% bind_rows -> age_dist
+
+  age_dist$age <- as.integer(age_dist$age)
 
   out <- sample(age_dist$age, n_draws, prob = age_dist$weight, replace = TRUE)
   return(out)
