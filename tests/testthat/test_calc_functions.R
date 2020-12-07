@@ -15,10 +15,10 @@ test_that("calc_fertility functions work", {
   expect_true(abs(calc_fertility(0.1) - logit(0.1)) < 0.01)
   expect_true(calc_fertility(0) == -Inf)
   calc_fertility <- calc_fertility_usa
-  expect_true(all(abs(calc_fertility(ages = 15:19) - (-9.11)) < 0.01))
-  expect_true(all(abs(calc_fertility(ages = 15:19, tic_length = 365) - (-3.17)) < 0.01))
-  expect_true(all(calc_fertility(ages = c(0:14, 50:119)) == -Inf))
-  expect_true(is.na(calc_fertility(ages = 120)))
+  expect_true(all(abs(calc_fertility(data.frame(age = 15:19)) - (-9.11)) < 0.01))
+  expect_true(all(abs(calc_fertility(data.frame(age = 15:19), tic_length = 365) - (-3.17)) < 0.01))
+  expect_true(all(calc_fertility(data.frame(age = c(0:14, 50:119))) == -Inf))
+  expect_true(is.na(calc_fertility(data.frame(age = 120))))
 })
 
 test_that("calc_mortality functions work", {
@@ -28,9 +28,9 @@ test_that("calc_mortality functions work", {
   expect_true(abs(calc_mortality(0.1) - logit(0.1)) < 0.01)
   expect_true(calc_mortality(0) == -Inf)
   calc_mortality <- calc_mortality_usa
-  expect_true(all(abs(calc_mortality(ages = 15:19) - (-13.25)) < 0.01))
-  expect_true(all(abs(calc_mortality(ages = 15:19, tic_length = 365) - (-7.35)) < 0.01))
-  expect_true(is.na(calc_mortality(ages = 120)))
+  expect_true(all(abs(calc_mortality(data.frame(age = 15:19)) - (-13.25)) < 0.01))
+  expect_true(all(abs(calc_mortality(data.frame(age = 15:19), tic_length = 365) - (-7.35)) < 0.01))
+  expect_true(is.na(calc_mortality(data.frame(age = 120))))
 })
 
 test_that("calc_emigration functions work", {

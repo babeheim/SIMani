@@ -27,6 +27,5 @@ inspect_people <- function(people) {
   if (!"date_of_death" %in% names(people)) warning("dod does not exist")
 
   if (any(is.na(people$date_of_birth))) stop("date_of_birth has missing values")
-  if (any(is.na(people$age))) stop("age has missing values")
   if (any(is.na(people$is_alive))) stop("is_alive has missing values")
 }

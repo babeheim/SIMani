@@ -1,4 +1,50 @@
 
+
+test_that("simulations with specific processes disabled still work", {
+
+  expect_silent({
+    pop <- generate_population(n = 100, calc_age_usa)
+    tic_length <- 365 # each tic increments a year
+    n_tics <- 100
+    for (i in 1:n_tics) {
+      pop %>%
+        increment_age() %>%
+        select_fatalities(current_tic = i, calc_mortality = calc_mortality_usa, tic_length = tic_length) %>%
+        select_emigrants() %>%
+        select_mates() %>%
+        select_conceptions(current_tic = i, calc_fertility = calc_fertility_usa, tic_length = tic_length) %>%
+        add_offspring(current_tic = i, tic_length = tic_length) %>%
+        add_immigrants(current_tic = i, tic_length = tic_length) %>%
+        identity() -> pop
+    }
+  })
+
+})
+
+
+
+test_that("realistic simulations work", {
+
+  expect_silent({
+    pop <- generate_population(n = 100, calc_age_usa)
+    inspect_people(pop)
+    tic_length <- 1 # each tic increments one day
+    n_tics <- 365
+    for (i in 1:n_tics) {
+      pop %>%
+        increment_age(tic_length = tic_length) %>%
+        select_fatalities(current_tic = i, calc_mortality = calc_mortality_usa, tic_length = tic_length) %>%
+        select_emigrants() %>%
+        select_mates() %>%
+        select_conceptions(current_tic = i, calc_fertility = calc_fertility_usa, tic_length = tic_length) %>%
+        add_offspring(current_tic = i, tic_length = tic_length) %>%
+        add_immigrants(current_tic = i, tic_length = tic_length) %>%
+        identity() -> pop
+    }
+  })
+
+})
+
 test_that("one tic works", {
 
   today <- 1

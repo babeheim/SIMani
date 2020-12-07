@@ -5,7 +5,8 @@ calc_fertility_basic <- function(base_rate = 0.001, ...) {
   return(log_odds)
 }
 
-calc_fertility_usa <- function(ages, tic_length = 1, ...) {
+calc_fertility_usa <- function(people, tic_length = 1, ...) {
+  ages <- people$age
   years_tic <- (tic_length / 365)
   list(
     list(age_cat = "[0, 15)",   annual_births_perthou = 0),
@@ -26,13 +27,14 @@ calc_fertility_usa <- function(ages, tic_length = 1, ...) {
   return(log_odds)
 }
 
-calc_mortality_basic <- function(base_rate = 0.001) {
+calc_mortality_basic <- function(base_rate = 0.001, ...) {
   alpha <- logit(base_rate)
   log_odds <- alpha
   return(log_odds)
 }
 
-calc_mortality_usa <- function(ages, tic_length = 1, ...) {
+calc_mortality_usa <- function(people, tic_length = 1, ...) {
+  ages <- people$age
   years_tic <- (tic_length / 365)
   list(
     list(age_cat = "[0, 1)",  annual_deaths_perthou = 6.54),

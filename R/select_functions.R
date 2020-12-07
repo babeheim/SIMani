@@ -1,17 +1,17 @@
 
 select_emigrants <- function(people, manual = NULL, calc_emigration = calc_emigration_basic) {
   emigrants <- integer(0)
-  active_people <- which(people$is_alive & people$is_present)
+  active <- which(people$is_alive & people$is_present)
   # specify manual emigrations for testing
   if (!is.null(manual)) {
-    if (!all(manual %in% active_people)) stop("only active people can emigrate")
+    if (!all(manual %in% active)) stop("only active people can emigrate")
     emigrants <- c(emigrants, manual)
   }
   # choose emigrants probabilistically
-  if (length(active_people) > 0) {
+  if (length(active) > 0) {
     logit_pr_emigrate <- calc_emigration()
-    emigrated <- rbinom(length(active_people), 1, logistic(logit_pr_emigrate))
-    emigrants <- c(emigrants, active_people[emigrated]) 
+    emigrated <- rbinom(length(active), 1, logistic(logit_pr_emigrate))
+    emigrants <- c(emigrants, active[emigrated]) 
   }
   # update people table based on all of above
   if (length(emigrants) > 0) {
@@ -24,24 +24,26 @@ select_emigrants <- function(people, manual = NULL, calc_emigration = calc_emigr
 }
 
 select_fatalities <- function(people, current_tic, manual = NULL,
-  calc_mortality = calc_mortality_basic) {
+  calc_mortality = calc_mortality_basic, tic_length = 1, ...) {
   fatalities <- integer(0)
-  active_people <- which(people$is_alive & people$is_present)
+  active <- which(people$is_alive & people$is_present)
   # specify manual fatalities for testing
   if (!is.null(manual)) {
-    if (!all(manual %in% active_people)) stop("only active people can die")
+    if (!all(manual %in% active)) stop("only active people can die")
     fatalities <- c(fatalities, manual)
   }
   # select fatalities probabilistically
-  if (length(active_people) > 0) {
-    logit_pr_die <- calc_mortality()
-    died <- as.logical(rbinom(length(active_people), 1, logistic(logit_pr_die)))
-    fatalities <- c(fatalities, active_people[died])
+  if (length(active) > 0) {
+    logit_pr_die <- calc_mortality(people = people[active,], ...)
+    died <- as.logical(rbinom(length(active), 1, logistic(logit_pr_die)))
+    fatalities <- c(fatalities, active[died])
   }
   # update people table based on all of above
   if (length(fatalities) > 0) {
-    people$date_of_death[fatalities] <- current_tic
+    people$date_of_death[fatalities] <- current_tic * (tic_length / 365)
+    people$is_present[fatalities] <- FALSE
     people$is_alive[fatalities] <- FALSE
+    people$age[fatalities] <- NA
     people$current_mate[fatalities] <- NA
     people$current_mate[which(people$current_mate %in% fatalities)] <- NA
   }
@@ -72,7 +74,7 @@ select_mates <- function(people) {
 }
 
 select_conceptions <- function(people, current_tic, manual = NULL,
-  calc_fertility = calc_fertility_basic, tic_length = 1) {
+  calc_fertility = calc_fertility_basic, tic_length = 1, ...) {
   conceptions <- integer(0)
   candidate_women <- which(people$female & people$age < 50 & people$age >= 15 &
     !is.na(people$current_mate) & is.na(people$due_date))
@@ -83,13 +85,14 @@ select_conceptions <- function(people, current_tic, manual = NULL,
   }
   # select conceptions probabilistically
   if (length(candidate_women) > 0) {
-    logit_pr_concieve <- calc_fertility()
+    logit_pr_concieve <- calc_fertility(people = people[candidate_women,], ...)
     concieved <- rbinom(length(candidate_women), 1, logistic(logit_pr_concieve))
     conceptions <- c(conceptions, candidate_women[concieved])
   }
   # update people table based on all of above
   if (length(conceptions) > 0) {
-    people$due_date[conceptions] <- current_tic + 270 * tic_length # assumes one day per tic
+    people$due_date[conceptions] <- current_tic + 270 / tic_length
+    # assumes 270 days gestation for every pregnancy
   }
   return(people)
 }

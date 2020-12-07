@@ -50,18 +50,23 @@ test_that("select_emigrants works", {
 
 
 test_that("select_fatalities works", {
-  tic <- 1
+
+  # test manual
   test <- list(
     list(name = "A", age = 1, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
     list(name = "B", age = 2, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
     list(name = "C", age = 1, date_of_death = 0, is_alive = FALSE, is_present = FALSE)
   ) %>% bind_rows() %>% as.data.frame()
 
-  expect_error(select_fatalities(test, 1, 3))
-  test <- select_fatalities(test, 1, 1)
+  expect_error(select_fatalities(test, current_tic = 1, manual = 3))
+  test <- select_fatalities(test, current_tic = 1, manual = 1)
   expect_false(test$is_alive[1])
-  test <- select_fatalities(test, 1, 2)
+  test <- select_fatalities(test, current_tic = 1, manual = 2)
   expect_false(test$is_alive[2])
+
+  expect_silent(select_fatalities(test, current_tic = 1, calc_mortality = calc_mortality_usa))
+  expect_silent(select_fatalities(test, current_tic = 1, calc_mortality = calc_mortality_usa, tic_length = 365))
+
 })
 
 

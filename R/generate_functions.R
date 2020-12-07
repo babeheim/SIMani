@@ -33,5 +33,6 @@ generate_population <- function(n, calc_age) {
     is_alive = logical(0)
   )
   output <- generate_people(n, people, calc_age)
+  output$date_of_birth <- 0 - output$age # initialized at 'year 0'
   return(output)
 }
