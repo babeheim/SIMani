@@ -73,7 +73,7 @@ test_that("two hundred tics with recording work", {
   expect_silent(inspect_people(people))
 
   n_tics <- 200
-  interval <- 10
+  interval <- 10 # measured in tics between each census
   censuses <- vector("list", floor(n_tics/interval))
 
   expect_silent({
@@ -86,7 +86,6 @@ test_that("two hundred tics with recording work", {
         select_conceptions(current_tic = today) %>%
         add_offspring(current_tic = today) %>%
         add_immigrants(current_tic = today) %>%
-        
         identity() -> people
 
       censuses %>% record_census(people, today, interval) -> censuses
