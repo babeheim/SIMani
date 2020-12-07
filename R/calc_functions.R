@@ -1,4 +1,27 @@
 
+calc_conception_basic <- function(women, people) {
+  baseline <- 0.001
+  alpha <- log(baseline / (1 - baseline))
+  # linear model goes here
+  log_odds_concieve <- alpha
+  return(log_odds_concieve)
+}
+
+calc_mortality_basic <- function(active_people, people) {
+  baseline <- 0.001
+  alpha <- log(baseline / (1 - baseline))
+  # linear model goes here
+  log_odds_concieve <- alpha
+  return(log_odds_concieve)
+}
+
+calc_emigration_basic <- function(active, people) {
+  baseline <- 0.001
+  alpha <- log(baseline/(1 - baseline))
+  # linear model goes here
+  log_odds_death <- alpha
+  return(log_odds_death)
+}
 
 # what do I want this to do exactly?
 calc_fertility_usa <- function(n_draws, ...) {

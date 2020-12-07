@@ -86,6 +86,7 @@ test_that("two hundred tics with recording work", {
         select_conceptions(current_tic = today) %>%
         add_offspring(current_tic = today) %>%
         add_immigrants(current_tic = today) %>%
+        
         identity() -> people
 
       censuses %>% record_census(people, today, interval) -> censuses
