@@ -42,7 +42,7 @@ calc_emigration_basic <- function(active, people) {
   return(log_odds_death)
 }
 
-select_emigrants <- function(people, manual = NA, FUN = calc_emigration_basic) {
+select_emigrants <- function(people, manual = NA, emi_fun = calc_emigration_basic) {
   active_people <- which(people$is_alive & people$is_present)
   if (length(active_people) > 0) {
     emigrants <- integer(0)
@@ -52,7 +52,7 @@ select_emigrants <- function(people, manual = NA, FUN = calc_emigration_basic) {
       emigrants <- c(emigrants, manual)
     }
     # choose emigrants probabilistically
-    logit_pr_emigrate <- FUN(active_people, people)
+    logit_pr_emigrate <- emi_fun(active_people, people)
     emigrated <- rbinom(length(active_people), 1, logistic(logit_pr_emigrate))
     emigrants <- c(emigrants, active_people[emigrated]) 
     # now update people table based on emigration decisions
@@ -74,7 +74,7 @@ calc_mortality_basic <- function(women, people) {
   return(log_odds_concieve)
 }
 
-select_fatalities <- function(people, current_tic, manual = NA, FUN = calc_mortality_basic) {
+select_fatalities <- function(people, current_tic, manual = NA, calc_mortality = calc_mortality_basic) {
   active_people <- which(people$is_alive & people$is_present)
   if (length(active_people) > 0) {
     fatalities <- integer(0)
@@ -83,7 +83,7 @@ select_fatalities <- function(people, current_tic, manual = NA, FUN = calc_morta
       if (!all(manual %in% active_people)) stop("only active people can die")
       fatalities <- c(fatalities, manual)
     }
-    logit_pr_die <- FUN(active_people, people)
+    logit_pr_die <- calc_mortality(active_people, people)
     died <- as.logical(rbinom(length(active_people), 1, logistic(logit_pr_die)))
     fatalities <- c(fatalities, active_people[died])
     # add additional deaths to test
@@ -134,7 +134,7 @@ logistic <- function (x) {
   return(p)
 }
 
-select_conceptions <- function(people, current_tic, manual = NA, FUN = calc_conception_basic) {
+select_conceptions <- function(people, current_tic, manual = NA, calc_conception = calc_conception_basic) {
   candidate_women <- which(people$female & people$age <= 45 &
     people$age >= 15 & !is.na(people$current_mate))
   if (length(candidate_women) > 0) {
@@ -145,7 +145,7 @@ select_conceptions <- function(people, current_tic, manual = NA, FUN = calc_conc
       conceptions <- c(conceptions, manual)
     }
     # select conceptions probabilistically
-    logit_pr_concieve <- FUN(candidate_women, people)
+    logit_pr_concieve <- calc_conception(candidate_women, people)
     concieved <- rbinom(length(candidate_women), 1, logistic(logit_pr_concieve))
     conceptions <- c(conceptions, candidate_women[concieved])
     # update people table based on above
@@ -156,35 +156,52 @@ select_conceptions <- function(people, current_tic, manual = NA, FUN = calc_conc
   return(people)
 }
 
-generate_new_person <- function(people, is_baby) {
+generate_person <- function(people, calc_age) {
   new_person <- vector("list", ncol(people))
   names(new_person) <- names(people)
   for (i in seq_along(new_person)) new_person[[i]] <- NA
   new_person$is_alive <- TRUE
   new_person$is_present <- TRUE
   new_person$female <- rbinom(1, 1, 0.5)
-  if (is_baby) {
-    new_person$age <- 0
-  } else {
-    new_person$age <- rpois(1, 10)
-  }
+  new_person$age <- calc_age(1, new_person)
   return(new_person)
 }
 
-generate_new_people <- function(n_new, people, is_baby = FALSE) {
+generate_people <- function(n_new, people, calc_age) {
   new_people <- vector("list", n_new)
   for (i in 1:n_new) {
-    new_people[[i]] <- generate_new_person(people, is_baby)
+    new_people[[i]] <- generate_person(people, calc_age)
   }
   new_people %>% bind_rows() %>% as.data.frame() -> new_people
   return(new_people)
 }
 
-add_immigrants <- function(people, current_tic, n_immigrants = 0) {
+generate_population <- function(n, calc_age) {
+
+  people <- data.frame(
+    father = integer(0),
+    mother = integer(0),
+    due_date = integer(0),
+    current_mate = integer(0),
+    female = logical(0),
+    age = integer(0),
+    date_of_birth = integer(0),
+    date_of_death = integer(0),
+    is_present = logical(0),
+    is_alive = logical(0)
+  )
+
+  output <- generate_people(n, people, calc_age)
+
+  return(output)
+
+}
+
+add_immigrants <- function(people, current_tic, n_immigrants = 0, calc_age = calc_age_simple) {
   # choose n_immigrants probabilistically
   n_immigrants <- n_immigrants + rpois(1, 3)
   if (n_immigrants > 0) {
-    immigrants <- generate_new_people(n_immigrants, people)
+    immigrants <- generate_people(n_immigrants, people, calc_age)
     for (i in 1:n_immigrants) {
       immigrants$date_of_birth[i] <- current_tic - immigrants$age[i]
     }
@@ -194,12 +211,12 @@ add_immigrants <- function(people, current_tic, n_immigrants = 0) {
   return(people)
 }
 
-add_offspring <- function(people, current_tic) {
+add_offspring <- function(people, current_tic, calc_age = calc_age_offspring) {
   women_in_labor <- which(people$due_date == current_tic)
   # currently one birth per woman
   n_births <- sum(people$due_date == current_tic, na.rm = TRUE)
   if (n_births > 0) {
-    births <- generate_new_people(n_births, people, is_baby = TRUE)
+    births <- generate_people(n_births, people, calc_age)
     for (i in 1:n_births) {
       births$mother[i] <- women_in_labor[i]
       births$father[i] <- people$current_mate[women_in_labor[i]]

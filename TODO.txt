@@ -1,5 +1,6 @@
+- add specific tests to differentiate generate_person and generate_people, including calc_age tests
+- add tests for the calc_age functions
 - specify `tic` units (days, years, etc. to calculate rates effectively)
-- create a function `init_people` with a variety of age structures
 - add an `update_traits` function that can be quite flexible
 - make `calc_fertility_agespec`, `calc_mortality_agespec`, etc. age-specific fertility and mortality, including mortality and fertility schedules
 - incorporate a calc_attractiveness function into select_mates, and also allow for bilateral decisions (e.g. both swipe right)

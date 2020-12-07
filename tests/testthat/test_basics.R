@@ -175,7 +175,7 @@ test_that("select_mates works", {
 })
 
 
-test_that("generate_new_people works", {
+test_that("generate_people works", {
 
   test <- list(
     list(age = 1, is_alive = TRUE, is_present = TRUE),
@@ -183,7 +183,7 @@ test_that("generate_new_people works", {
     list(age = 1, is_alive = FALSE, is_present = TRUE)
   ) %>% bind_rows() %>% as.data.frame()
 
-  add <- generate_new_people(100, test)
+  add <- generate_people(100, test, calc_age = calc_age_simple)
   expect_true(nrow(add) == 100)
   expect_true(ncol(add) == 4)
 
@@ -193,7 +193,7 @@ test_that("generate_new_people works", {
     list(age = 1, is_alive = FALSE, female = TRUE, is_present = TRUE)
   ) %>% bind_rows() %>% as.data.frame()
   
-  add2 <- generate_new_people(100, test2)
+  add2 <- generate_people(100, test2, calc_age = calc_age_simple)
   expect_true(nrow(add2) == 100)
   expect_true(ncol(add2) == 4)
 
@@ -258,4 +258,16 @@ test_that("inspect_people works", {
 
   expect_error(inspect_people(test))
 
+})
+
+test_that("generate_population works", {
+  new <- generate_population(1, calc_age = calc_age_simple)
+  expect_true(nrow(new) == 1)
+  new <- generate_population(10, calc_age = calc_age_simple)
+  expect_true(nrow(new) == 10)
+  new <- generate_population(1000, calc_age = calc_age_simple)
+  expect_true(nrow(new) == 1000)
+  new <- generate_population(10, calc_age = calc_age_offspring)
+  expect_true(nrow(new) == 10)
+  expect_true(all(new$age == 0))
 })
