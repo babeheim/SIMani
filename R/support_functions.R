@@ -30,3 +30,13 @@ inspect_ppl <- function(ppl) {
   if (any(is.na(ppl$date_of_birth))) stop("date_of_birth has missing values")
   if (any(is.na(ppl$is_alive))) stop("is_alive has missing values")
 }
+
+record_census <- function(censuses, ppl, current_tic, census_interval = 365) {
+  if (current_tic %% census_interval == 0) {
+    census_number <- floor(current_tic/census_interval)
+    censuses[[census_number]] <- ppl
+    censuses[[census_number]]$id <- 1:nrow(ppl)
+    censuses[[census_number]]$current_tic <- current_tic
+  }
+  return(censuses)
+}
