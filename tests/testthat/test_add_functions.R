@@ -27,8 +27,8 @@ test_that("add_offspring works", {
   test <- list(
     list(female = FALSE, mother = NA, father = NA),
     list(female = FALSE, mother = NA, father = NA),
-    list(female = TRUE, due_date = 1, current_mate = 1, mother = NA, father = NA),
-    list(female = TRUE, due_date = 1, current_mate = 2, mother = NA, father = NA)
+    list(female = TRUE, to_reproduce = TRUE, current_partner = 1, mother = NA, father = NA),
+    list(female = TRUE, to_reproduce = TRUE, current_partner = 2, mother = NA, father = NA)
   ) %>% bind_rows() %>% as.data.frame()
 
   test <- add_offspring(test, current_tic = 1, tic_length = 365)

@@ -1,10 +1,10 @@
 
-select_emigrants <- function(people, manual = NULL, calc_emigration = calc_emigration_basic) {
+select_emigrants <- function(ppl, manual = NULL, calc_emigration = calc_emigration_basic) {
   emigrants <- integer(0)
-  active <- which(people$is_alive & people$is_present)
+  active <- which(ppl$is_alive & ppl$is_present)
   # specify manual emigrations for testing
   if (!is.null(manual)) {
-    if (!all(manual %in% active)) stop("only active people can emigrate")
+    if (!all(manual %in% active)) stop("only active ppl can emigrate")
     emigrants <- c(emigrants, manual)
   }
   # choose emigrants probabilistically
@@ -13,86 +13,94 @@ select_emigrants <- function(people, manual = NULL, calc_emigration = calc_emigr
     emigrated <- rbinom(length(active), 1, logistic(logit_pr_emigrate))
     emigrants <- c(emigrants, active[emigrated]) 
   }
-  # update people table based on all of above
+  # update ppl table based on all of above
   if (length(emigrants) > 0) {
-    people$is_present[emigrants] <- FALSE
+    ppl$is_present[emigrants] <- FALSE
     # currently emigrants dont go with relatives, but we can change
-    people$current_mate[emigrants] <- NA
-    people$current_mate[which(people$current_mate %in% emigrants)] <- NA
+    ppl$current_partner[emigrants] <- NA
+    ppl$current_partner[which(ppl$current_partner %in% emigrants)] <- NA
   }
-  return(people)
+  return(ppl)
 }
 
-select_fatalities <- function(people, current_tic, manual = NULL,
-  calc_mortality = calc_mortality_basic, tic_length = 1, ...) {
+select_fatalities <- function(ppl, current_tic, manual = NULL,
+  calc_mortality = calc_mortality_basic, tic_length = 365, ...) {
   fatalities <- integer(0)
-  active <- which(people$is_alive & people$is_present)
+  active <- which(ppl$is_alive & ppl$is_present)
   # specify manual fatalities for testing
   if (!is.null(manual)) {
-    if (!all(manual %in% active)) stop("only active people can die")
+    if (!all(manual %in% active)) stop("only active ppl can die")
     fatalities <- c(fatalities, manual)
   }
   # select fatalities probabilistically
   if (length(active) > 0) {
-    logit_pr_die <- calc_mortality(people = people[active,], ...)
+    logit_pr_die <- calc_mortality(ppl = ppl[active,], ...)
     died <- as.logical(rbinom(length(active), 1, logistic(logit_pr_die)))
     fatalities <- c(fatalities, active[died])
   }
-  # update people table based on all of above
+  # update ppl table based on all of above
   if (length(fatalities) > 0) {
-    people$date_of_death[fatalities] <- current_tic * (tic_length / 365)
-    people$is_present[fatalities] <- FALSE
-    people$is_alive[fatalities] <- FALSE
-    people$age[fatalities] <- NA
-    people$current_mate[fatalities] <- NA
-    people$current_mate[which(people$current_mate %in% fatalities)] <- NA
+    ppl$date_of_death[fatalities] <- current_tic * (tic_length / 365)
+    ppl$is_present[fatalities] <- FALSE
+    ppl$is_alive[fatalities] <- FALSE
+    ppl$age[fatalities] <- NA
+    ppl$current_partner[fatalities] <- NA
+    ppl$current_partner[which(ppl$current_partner %in% fatalities)] <- NA
   }
-  return(people)
+  return(ppl)
 }
 
-select_mates <- function(people) {
-  # in this version, women choose men
-  available_women <- which(is.na(people$current_mate) &
-    people$age >= 15 & people$female & people$is_present)
-  # random reindex to avoid any kind of order bias in mating
-  available_women <- available_women[sample(length(available_women))]
-  available_men <- which(is.na(people$current_mate) &
-    people$age >= 15 & !people$female & people$is_present)
-  if (length(available_women) > 0 & length(available_men) > 0) {
-    for (i in seq_along(available_women)) {
-      if (length(available_men) > 0) {
-        focal_woman <- available_women[i]
-        pr_choose_man <- rep(1, length(available_men))
-        chosen_man <- sample_safe(available_men, 1, prob = pr_choose_man)
-        people$current_mate[focal_woman] <- chosen_man
-        people$current_mate[chosen_man] <- focal_woman
-        available_men <- setdiff(available_men, chosen_man)
+select_reproducers <- function(ppl, current_tic, manual = NULL,
+  calc_fertility = calc_fertility_basic, tic_length = 365, ...) {
+  reproducers <- integer(0)
+  candidates <- which(ppl$is_alive & ppl$is_present & ppl$age >= 10 & ppl$age < 65)
+  # select manually for testing
+  if (!is.null(manual)) {
+    if (!all(manual %in% candidates)) stop("only living, present adults can reproduce!")
+    reproducers <- c(reproducers, manual)
+  }
+  # select births probabilistically
+  if (length(candidates) > 0) {
+    logit_pr_reproduce <- calc_fertility(ppl = ppl[candidates,], ...)
+    reproduced <- as.logical(rbinom(length(candidates), 1, logistic(logit_pr_reproduce)))
+    reproducers <- c(reproducers, candidates[reproduced])
+  }
+  ppl$to_reproduce[reproducers] <- TRUE
+  return(ppl)
+}
+
+select_partners <- function(ppl, calc_dyad_score = calc_dyad_score_random) {
+  # rows are women
+  repro_women <- which(ppl$to_reproduce & ppl$female)
+  n_repro_women <- length(repro_women)
+  # columns are men
+  repro_men <- which(ppl$to_reproduce & !ppl$female)
+  n_repro_men <- length(repro_men)
+  if (n_repro_women > 0 & n_repro_men > 0) {
+    if (any(ppl$is_present[c(repro_women, repro_men)] == FALSE)) stop("reproductive people cannot be missing")
+    if (any(ppl$is_alive[c(repro_women, repro_men)] == FALSE)) stop("reproductive people cannot be dead")
+    dyad_scores <- matrix(NA, nrow = n_repro_women, ncol = n_repro_men)
+    # now fill out the dyad scores
+    for (i in 1:n_repro_women) {
+      for (j in 1:n_repro_men) {
+        dyad_scores[i, j] <- calc_dyad_score(repro_women[i], repro_men[j], ppl)
       }
     }
+    if (any(is.na(dyad_scores))) stop("some dyad scores are missing!")
+    # now pair up according to the scores
+    for (i in 1:min(n_repro_men, n_repro_women)) {
+      dyad_highest_score <- max(dyad_scores, na.rm = TRUE)
+      dyad_highest_score_index <- sample_safe(which(dyad_scores == dyad_highest_score), 1) # indexing from top left to bottom right
+      dyad_highest_score_column <- ceiling(dyad_highest_score_index / n_repro_women)
+      dyad_highest_score_row <- dyad_highest_score_index - n_repro_women * (dyad_highest_score_column - 1)
+      dyad_scores[dyad_highest_score_row, ] <- NA
+      dyad_scores[, dyad_highest_score_column] <- NA
+      paired_woman <- repro_women[dyad_highest_score_row]
+      paired_man <- repro_men[dyad_highest_score_column]
+      ppl$current_partner[paired_man] <- paired_woman
+      ppl$current_partner[paired_woman] <- paired_man
+    }
   }
-  return(people)
-}
-
-select_conceptions <- function(people, current_tic, manual = NULL,
-  calc_fertility = calc_fertility_basic, tic_length = 1, ...) {
-  conceptions <- integer(0)
-  candidate_women <- which(people$female & people$age < 50 & people$age >= 15 &
-    !is.na(people$current_mate) & is.na(people$due_date))
-  # select manual conceptions for testing
-  if (!is.null(manual)) {
-    if (!all(manual %in% candidate_women)) stop("only fertile, mated women can conceive")
-    conceptions <- c(conceptions, manual)
-  }
-  # select conceptions probabilistically
-  if (length(candidate_women) > 0) {
-    logit_pr_concieve <- calc_fertility(people = people[candidate_women,], ...)
-    concieved <- rbinom(length(candidate_women), 1, logistic(logit_pr_concieve))
-    conceptions <- c(conceptions, candidate_women[concieved])
-  }
-  # update people table based on all of above
-  if (length(conceptions) > 0) {
-    people$due_date[conceptions] <- current_tic + 270 / tic_length
-    # assumes 270 days gestation for every pregnancy
-  }
-  return(people)
+  # note: if n_repro_men != n_repro_women, some reproducing people will not pair up
+  return(ppl)
 }

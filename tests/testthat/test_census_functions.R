@@ -8,8 +8,8 @@ test_that("record_census works", {
   ) %>% bind_rows() %>% as.data.frame()
 
   censuses <- vector("list", 2)
-  censuses %>% record_census(test, current_tic = 5, interval = 5) -> censuses
-  censuses %>% record_census(test, current_tic = 10, interval = 5) -> censuses
+  censuses %>% record_census(test, current_tic = 5, census_interval = 5) -> censuses
+  censuses %>% record_census(test, current_tic = 10, census_interval = 5) -> censuses
   expect_true(class(censuses[[1]]) == "data.frame")
   expect_true(class(censuses[[2]]) == "data.frame")
 

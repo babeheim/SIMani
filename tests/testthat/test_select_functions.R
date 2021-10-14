@@ -1,33 +1,22 @@
 
-test_that("select_conceptions works", {
+test_that("select_reproducers works", {
 
   test <- list(
-    list(current_mate = 4, female = TRUE, age = 15, due_date = NA),
-    list(current_mate = 5, female = TRUE, age = 15, due_date = NA),
-    list(current_mate = 6, female = TRUE, age = 15, due_date = NA),
-    list(current_mate = 1, female = FALSE, age = 15),
-    list(current_mate = 2, female = FALSE, age = 15),
-    list(current_mate = 3, female = FALSE, age = 15)
+    list(female = TRUE, age = 15, to_reproduce = FALSE, is_alive = TRUE, is_present = TRUE),
+    list(female = TRUE, age = 15, to_reproduce = FALSE, is_alive = TRUE, is_present = TRUE),
+    list(female = TRUE, age = 15, to_reproduce = FALSE, is_alive = TRUE, is_present = TRUE),
+    list(female = FALSE, age = 15, to_reproduce = FALSE, is_alive = TRUE, is_present = TRUE),
+    list(female = FALSE, age = 15, to_reproduce = FALSE, is_alive = TRUE, is_present = TRUE),
+    list(female = FALSE, age = 95, to_reproduce = FALSE, is_alive = TRUE, is_present = TRUE)
   ) %>% bind_rows() %>% as.data.frame()
 
   # manual tests
-  test <- select_conceptions(test, 1, 1)
-  expect_true(!is.na(test$due_date[1]))
-  expect_error(select_conceptions(test, 1, 1))
-  test <- select_conceptions(test, 1, c(2, 3))
-  expect_true(!any(is.na(test$due_date[2:3])))
-  expect_error(select_conceptions(test, 1, c(4, 5, 6)))
-
-  # using different calc_conception function
-
-  test <- list(
-    list(current_mate = 4, female = TRUE, age = 15, due_date = NA),
-    list(current_mate = 5, female = TRUE, age = 15, due_date = NA),
-    list(current_mate = 6, female = TRUE, age = 15, due_date = NA),
-    list(current_mate = 1, female = FALSE, age = 15),
-    list(current_mate = 2, female = FALSE, age = 15),
-    list(current_mate = 3, female = FALSE, age = 15)
-  ) %>% bind_rows() %>% as.data.frame()
+  test <- select_reproducers(test, current_tic = 1, manual = 1)
+  expect_true(test$to_reproduce[1])
+  expect_error(select_reproducers(test, 1, 6)) # the 95-year-old can't reproduce
+  test <- select_reproducers(test, 1, c(2, 3))
+  expect_true(all(test$to_reproduce[2:3]))
+  expect_error(select_reproducers(test, 1, c(4, 5, 6))) # the 95-year-old can't reproduce
 
 })
 
@@ -71,88 +60,33 @@ test_that("select_fatalities works", {
 
 
 
-test_that("select_mates works", {
+test_that("select_partners works", {
 
   test <- list(
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
-  expect_true(!any(is.na(test$current_mate)))
+    list(current_partner = NA, female = TRUE, to_reproduce = TRUE),
+    list(current_partner = NA, female = TRUE, to_reproduce = TRUE),
+    list(current_partner = NA, female = TRUE, to_reproduce = TRUE),
+    list(current_partner = NA, female = FALSE, to_reproduce = TRUE),
+    list(current_partner = NA, female = FALSE, to_reproduce = TRUE),
+    list(current_partner = NA, female = FALSE, to_reproduce = TRUE)
+  ) %>% bind_rows() %>% as.data.frame() %>% select_partners(calc_dyad_score = calc_dyad_score_random)
+  expect_true(!any(is.na(test$current_partner)))
+  expect_true(all(test$current_partner[test$current_partner] == 1:nrow(test)))
+  
+  test <- list(
+    list(current_partner = NA, female = TRUE, age = 15, to_reproduce = TRUE),
+    list(current_partner = NA, female = TRUE, age = 35, to_reproduce = TRUE),
+    list(current_partner = NA, female = TRUE, age = 35, to_reproduce = TRUE),
+    list(current_partner = NA, female = FALSE, age = 15, to_reproduce = TRUE)
+  ) %>% bind_rows() %>% as.data.frame() %>% select_partners(calc_dyad_score = calc_dyad_score_age_hist)
+  expect_true(sum(is.na(test$current_partner)) == 2)
+  expect_true(test$current_partner[1] == 4)
+  expect_true(test$current_partner[4] == 1)
 
-  test2 <- list(
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
-  expect_true(sum(is.na(test2$current_mate)) == 2)
-
-  test3 <- list(
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
-  expect_true(sum(is.na(test3$current_mate)) == 2)
-
-  test4 <- list(
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 14, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 14, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
-  expect_true(sum(is.na(test4$current_mate)) == 4)
-  expect_true(is.na(test4$current_mate[2]))
-  expect_true(is.na(test4$current_mate[3]))
-
-  test5 <- list(
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 14, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 14, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
-  expect_true(sum(is.na(test5$current_mate)) == 4)
-  expect_true(is.na(test5$current_mate[4]))
-  expect_true(is.na(test5$current_mate[5]))
-
-  test6 <- list(
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 14, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 14, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 14, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
-  expect_true(all(is.na(test6$current_mate)))
-
-  test7 <- list(
-    list(current_mate = NA, female = TRUE, age = 14, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 14, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 14, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
-  expect_true(all(is.na(test7$current_mate)))
-
-  test8 <- list(
-    list(current_mate = 4, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = TRUE, age = 15, is_present = TRUE),
-    list(current_mate = 1, female = FALSE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE),
-    list(current_mate = NA, female = FALSE, age = 15, is_present = TRUE)
-  ) %>% bind_rows() %>% as.data.frame() %>% select_mates()
-  expect_true(!any(is.na(test8$current_mate)))
-  expect_true(test8$current_mate[1] == 4)
-  expect_true(test8$current_mate[4] == 1)
+  test <- list(
+    list(current_partner = NA, female = TRUE, age = 45, to_reproduce = TRUE),
+    list(current_partner = NA, female = FALSE, age = 15, to_reproduce = TRUE)
+  ) %>% bind_rows() %>% as.data.frame() %>% select_partners(calc_dyad_score = calc_dyad_score_age_hist)
+  expect_true(sum(is.na(test$current_partner)) == 0)
 
 })
