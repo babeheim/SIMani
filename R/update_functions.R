@@ -1,9 +1,22 @@
 
-
 update_trait_simple <- function(ppl, trait, pr_trait = 0.5) {
-  if (!hasName(colnames(ppl), trait)) ppl[[trait]] <- NA
-  tar <- which(is.na(ppl$everspan))
+  if (!hasName(ppl, trait)) ppl[[trait]] <- NA
+  tar <- which(is.na(ppl[[trait]]))
   ppl[[trait]][tar] <- as.logical(rbinom(length(tar), 1, prob = pr_trait))
+  return(ppl)
+}
+
+update_trait_vertical <- function(ppl, trait, schedule) {
+  if (!hasName(ppl, trait)) ppl[[trait]] <- NA
+  ppl$father_trait <- ppl[[trait]][ppl$father]
+  ppl$mother_trait <- ppl[[trait]][ppl$mother]
+  ppl$key <- paste(ppl$female, ppl$father_trait, ppl$mother_trait)
+  schedule$key <- paste(schedule$female, schedule$father_trait, schedule$mother_trait)
+  tar <- which(is.na(ppl[[trait]]))
+  pr_trait <- schedule$pr_trait[match(ppl$key[tar], schedule$key)]
+  ppl[[trait]][tar] <- as.logical(rbinom(length(tar), 1, prob = pr_trait))
+  if (any(is.na(ppl$trait))) stop("somehow ppl arent getting their traits")
+  ppl <- select(ppl, -key, -father_trait, -mother_trait)
   return(ppl)
 }
 
