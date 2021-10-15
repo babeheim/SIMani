@@ -1,4 +1,7 @@
 
+
+# need some update_trait functions...
+
 test_that("update_age function works", {
 
   test <- list(

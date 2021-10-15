@@ -19,9 +19,10 @@ test_that("age binning works", {
   ages <- runif(100, 1, 5)
   expect_true(all(bin_ages(ages, 1:5) == floor(ages)))
 
+  # binning retains anyone at or above the last bin
   ages <- c(1, 2, 3)
   age_bins <- c(1, 2)
-  expect_error(bin_ages(ages, age_bins))
+  expect_silent(bin_ages(ages, age_bins))
 
   ages <- c(1, 2, 3)
   age_bins <- c(2, 3)

@@ -69,7 +69,7 @@ select_reproducers <- function(ppl, current_tic, manual = NULL,
   return(ppl)
 }
 
-select_partners <- function(ppl, calc_dyad_score = calc_dyad_score_random) {
+select_partners <- function(ppl, calc_dyad_score = calc_dyad_score_random, ...) {
   # rows are women
   repro_women <- which(ppl$to_reproduce & ppl$female)
   n_repro_women <- length(repro_women)
@@ -86,7 +86,7 @@ select_partners <- function(ppl, calc_dyad_score = calc_dyad_score_random) {
     # now fill out the dyad scores
     for (i in 1:n_repro_women) {
       for (j in 1:n_repro_men) {
-        dyad_scores[i, j] <- calc_dyad_score(repro_women[i], repro_men[j], ppl)
+        dyad_scores[i, j] <- calc_dyad_score(repro_women[i], repro_men[j], ppl, ...)
       }
     }
     if (any(is.na(dyad_scores))) stop("some dyad scores are missing!")

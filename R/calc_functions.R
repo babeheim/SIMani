@@ -12,11 +12,11 @@ calc_dyad_score_age_hist <- function(woman, man, ppl) {
   return(out)
 }
 
-calc_dyad_score_age_hist_phi <- function(woman, man, ppl, trait) {
-  if (any(is.na(ppl[[trait]]))) stop("assortment trait cannot be missing among reproductives")
+calc_dyad_score_age_hist_trait <- function(woman, man, ppl, assort_trait) {
+  if (any(is.na(ppl[[assort_trait]]))) stop("assortment trait cannot be missing among reproductives")
   n_kids_already <- sum(ppl$mother == woman & ppl$father == man, na.rm = TRUE)
   age_gap <- ppl$age[man] - ppl$age[woman]
-  same_phenotype <- as.numeric(ppl[[trait]][man] == ppl[[trait]][woman])
+  same_phenotype <- as.numeric(ppl[[assort_trait]][man] == ppl[[assort_trait]][woman])
   out <- 1000 * n_kids_already + 10 * (10 - abs(age_gap)) + same_phenotype * 50
   return(out)
 }
