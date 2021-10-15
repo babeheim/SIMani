@@ -27,6 +27,10 @@ inspect_ppl <- function(ppl) {
   if (!"is_present" %in% names(ppl)) warning("is_present does not exist")
   if (!"date_of_death" %in% names(ppl)) warning("dod does not exist")
 
+  if (any(!is.na(ppl$father) & ppl$father > nrow(ppl))) stop("invalid father id")
+  if (any(!is.na(ppl$mother) & ppl$mother > nrow(ppl))) stop("invalid mother id")
+  if (any(!is.na(ppl$father) & ppl$female[ppl$father])) stop("some females listed as fathers!")
+  if (any(!is.na(ppl$mother) & !ppl$female[ppl$mother])) stop("some males listed as mothers!")
   if (any(is.na(ppl$date_of_birth))) stop("date_of_birth has missing values")
   if (any(is.na(ppl$is_alive))) stop("is_alive has missing values")
 }

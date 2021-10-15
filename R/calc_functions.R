@@ -1,4 +1,5 @@
 
+## calc_dyad_score methods
 
 calc_dyad_score_random <- function(woman, man, ppl) {
   return(1)
@@ -11,11 +12,32 @@ calc_dyad_score_age_hist <- function(woman, man, ppl) {
   return(out)
 }
 
+calc_dyad_score_age_hist_phi <- function(woman, man, ppl, trait) {
+  if (any(is.na(ppl[[trait]]))) stop("assortment trait cannot be missing among reproductives")
+  n_kids_already <- sum(ppl$mother == woman & ppl$father == man, na.rm = TRUE)
+  age_gap <- ppl$age[man] - ppl$age[woman]
+  same_phenotype <- as.numeric(ppl[[trait]][man] == ppl[[trait]][woman])
+  out <- 1000 * n_kids_already + 10 * (10 - abs(age_gap)) + same_phenotype * 50
+  return(out)
+}
 
-calc_fertility_basic <- function(base_rate = 0.001, ...) {
-  alpha <- logit(base_rate)
-  log_odds <- alpha
-  return(log_odds)
+## generic event using a schedule
+
+calc_pr_event <- function(ppl, schedule, tic_length = 365, ...) {
+  years_per_tic <- (tic_length / 365)
+  schedule$pr_event_annual <- schedule$events_perthou / 1000
+  schedule$pr_event_per_tic <- schedule$pr_event_annual * years_per_tic
+  ppl$age_bins <- schedule$age[cut(ppl$age, schedule$age, right = FALSE, labels = FALSE)]
+  if (any(is.na(ppl$age_bins))) stop("some ppl ages not inside schedule boundaries")
+  link <- match(ppl$age_bins, schedule$age)
+  pr_event_per_tic <- schedule$pr_event_per_tic[link]
+  return(pr_event_per_tic)
+}
+
+## calc_fertility methods
+
+calc_fertility_basic <- function(ppl, base_rate = 0.001, ...) {
+  rep(base_rate, nrow(ppl))
 }
 
 calc_fertility_usa <- function(ppl, tic_length = 365, ...) {
@@ -36,14 +58,13 @@ calc_fertility_usa <- function(ppl, tic_length = 365, ...) {
   age_rows <- cut(ages, age_cutoffs, right = FALSE, labels = FALSE)
   annual_pr_event <- asfr$annual_births_perthou[age_rows] / 1000
   pr_event_per_tic <- annual_pr_event * years_tic
-  log_odds <- logit(pr_event_per_tic)
-  return(log_odds)
+  return(pr_event_per_tic)
 }
 
-calc_mortality_basic <- function(base_rate = 0.001, ...) {
-  alpha <- logit(base_rate)
-  log_odds <- alpha
-  return(log_odds)
+## calc_mortality methods
+
+calc_mortality_basic <- function(ppl, base_rate = 0.001, ...) {
+  rep(base_rate, nrow(ppl))
 }
 
 calc_mortality_usa <- function(ppl, tic_length = 365, ...) {
@@ -77,19 +98,27 @@ calc_mortality_usa <- function(ppl, tic_length = 365, ...) {
   age_rows <- cut(ages, age_cutoffs, right = FALSE, labels = FALSE)
   annual_pr_event <- asmr$annual_deaths_perthou[age_rows] / 1000
   pr_event_per_tic <- annual_pr_event * years_tic
-  log_odds <- logit(pr_event_per_tic)
-  return(log_odds)
+  return(pr_event_per_tic)
 }
 
-calc_emigration_basic <- function(base_rate = 0.001) {
-  alpha <- logit(base_rate)
-  log_odds <- alpha
-  return(log_odds)
+# calc_emigration methods
+
+calc_emigration_basic <- function(ppl, base_rate = 0.001) {
+  rep(base_rate, nrow(ppl))
 }
 
+
+# calc_age methods
+
+calc_age_offspring <- function(n_draws, recruit_age = 0, ...) {
+  rep(recruit_age, n_draws)
+}
+
+calc_age_basic <- function(n_draws, ...) {
+  rpois(n_draws, 10)
+}
 
 calc_age_tsimane <- function(n_draws, ...) {
-
   list(
     list(age = 0,  weight = 169),
     list(age = 1,  weight = 257),
@@ -192,16 +221,13 @@ calc_age_tsimane <- function(n_draws, ...) {
     list(age = 98, weight = 7),
     list(age = 99, weight = 3)
   ) %>% bind_rows -> age_dist
-
   age_dist$age <- as.integer(age_dist$age)
-
   out <- sample(age_dist$age, n_draws, prob = age_dist$weight, replace = TRUE)
   return(out)
 
 }
 
 calc_age_usa <- function(n_draws, ...) {
-# probably there's an elegant way to write an equation instead!
   list(
     list(age = 0,  weight = 57),
     list(age = 1,  weight = 74),
@@ -304,18 +330,7 @@ calc_age_usa <- function(n_draws, ...) {
     list(age = 98, weight = 2),
     list(age = 99, weight = 4)
   ) %>% bind_rows -> age_dist
-
   age_dist$age <- as.integer(age_dist$age)
-
   out <- sample(age_dist$age, n_draws, prob = age_dist$weight, replace = TRUE)
   return(out)
-
-}
-
-calc_age_offspring <- function(n_draws, ...) {
-  0
-}
-
-calc_age_basic <- function(n_draws, ...) {
-  rpois(n_draws, 10)
 }

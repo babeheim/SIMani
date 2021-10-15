@@ -1,4 +1,0 @@
-- run some scenarios in test_simulations to identify slowdowns
-- add an `update_traits` function that can be quite flexible
-- incorporate a calc_attractiveness function into select_mates
-- incorporate bilateral decisions in select_mates (e.g. both partners swipe right)

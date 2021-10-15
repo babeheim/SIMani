@@ -11,10 +11,10 @@ test_that("select_reproducers works", {
   ) %>% bind_rows() %>% as.data.frame()
 
   # manual tests
-  test <- select_reproducers(test, current_tic = 1, manual = 1)
+  test <- select_reproducers(test, current_tic = 1, manual = 1, calc_fertility = calc_fertility_basic)
   expect_true(test$to_reproduce[1])
   expect_error(select_reproducers(test, 1, 6)) # the 95-year-old can't reproduce
-  test <- select_reproducers(test, 1, c(2, 3))
+  test <- select_reproducers(test, 1, c(2, 3), calc_fertility = calc_fertility_basic)
   expect_true(all(test$to_reproduce[2:3]))
   expect_error(select_reproducers(test, 1, c(4, 5, 6))) # the 95-year-old can't reproduce
 
@@ -30,10 +30,10 @@ test_that("select_emigrants works", {
     list(name = "C", age = 1, date_of_death = 0, is_alive = FALSE, is_present = FALSE)
   ) %>% bind_rows() %>% as.data.frame()
 
-  expect_error(select_emigrants(test, 3))
+  expect_error(select_emigrants(test, 3, calc_emigration = calc_emigration_basic))
   test <- select_emigrants(test, 1)
   expect_false(test$is_present[1])
-  test <- select_emigrants(test, 2)
+  test <- select_emigrants(test, 2, calc_emigration = calc_emigration_basic)
   expect_false(test$is_present[2])
 })
 
@@ -47,10 +47,10 @@ test_that("select_fatalities works", {
     list(name = "C", age = 1, date_of_death = 0, is_alive = FALSE, is_present = FALSE)
   ) %>% bind_rows() %>% as.data.frame()
 
-  expect_error(select_fatalities(test, current_tic = 1, manual = 3))
-  test <- select_fatalities(test, current_tic = 1, manual = 1)
+  expect_error(select_fatalities(test, current_tic = 1, manual = 3, calc_mortality = calc_mortality_basic))
+  test <- select_fatalities(test, current_tic = 1, manual = 1, calc_mortality = calc_mortality_basic)
   expect_false(test$is_alive[1])
-  test <- select_fatalities(test, current_tic = 1, manual = 2)
+  test <- select_fatalities(test, current_tic = 1, manual = 2, calc_mortality = calc_mortality_basic)
   expect_false(test$is_alive[2])
 
   expect_silent(select_fatalities(test, current_tic = 1, calc_mortality = calc_mortality_usa))

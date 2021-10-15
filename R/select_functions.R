@@ -1,5 +1,5 @@
 
-select_emigrants <- function(ppl, manual = NULL, calc_emigration = calc_emigration_basic) {
+select_emigrants <- function(ppl, manual = NULL, calc_emigration = calc_emigration_basic, ...) {
   emigrants <- integer(0)
   active <- which(ppl$is_alive & ppl$is_present)
   # specify manual emigrations for testing
@@ -9,9 +9,9 @@ select_emigrants <- function(ppl, manual = NULL, calc_emigration = calc_emigrati
   }
   # choose emigrants probabilistically
   if (length(active) > 0) {
-    logit_pr_emigrate <- calc_emigration()
-    emigrated <- rbinom(length(active), 1, logistic(logit_pr_emigrate))
-    emigrants <- c(emigrants, active[emigrated]) 
+    pr_emigrate <- calc_emigration(ppl[active,], ...)
+    emigrated <- rbinom(length(active), 1, pr_emigrate)
+    emigrants <- c(emigrants, active[emigrated])
   }
   # update ppl table based on all of above
   if (length(emigrants) > 0) {
@@ -24,7 +24,7 @@ select_emigrants <- function(ppl, manual = NULL, calc_emigration = calc_emigrati
 }
 
 select_fatalities <- function(ppl, current_tic, manual = NULL,
-  calc_mortality = calc_mortality_basic, tic_length = 365, ...) {
+  calc_mortality = calc_pr_event, tic_length = 365, ...) {
   fatalities <- integer(0)
   active <- which(ppl$is_alive & ppl$is_present)
   # specify manual fatalities for testing
@@ -34,8 +34,8 @@ select_fatalities <- function(ppl, current_tic, manual = NULL,
   }
   # select fatalities probabilistically
   if (length(active) > 0) {
-    logit_pr_die <- calc_mortality(ppl = ppl[active,], ...)
-    died <- as.logical(rbinom(length(active), 1, logistic(logit_pr_die)))
+    pr_die <- calc_mortality(ppl = ppl[active,], ...)
+    died <- as.logical(rbinom(length(active), 1, pr_die))
     fatalities <- c(fatalities, active[died])
   }
   # update ppl table based on all of above
@@ -51,7 +51,7 @@ select_fatalities <- function(ppl, current_tic, manual = NULL,
 }
 
 select_reproducers <- function(ppl, current_tic, manual = NULL,
-  calc_fertility = calc_fertility_basic, tic_length = 365, ...) {
+  calc_fertility = calc_pr_event, tic_length = 365, ...) {
   reproducers <- integer(0)
   candidates <- which(ppl$is_alive & ppl$is_present & ppl$age >= 10 & ppl$age < 65)
   # select manually for testing
@@ -61,8 +61,8 @@ select_reproducers <- function(ppl, current_tic, manual = NULL,
   }
   # select births probabilistically
   if (length(candidates) > 0) {
-    logit_pr_reproduce <- calc_fertility(ppl = ppl[candidates,], ...)
-    reproduced <- as.logical(rbinom(length(candidates), 1, logistic(logit_pr_reproduce)))
+    pr_reproduce <- calc_fertility(ppl = ppl[candidates,], ...)
+    reproduced <- as.logical(rbinom(length(candidates), 1, pr_reproduce))
     reproducers <- c(reproducers, candidates[reproduced])
   }
   ppl$to_reproduce[reproducers] <- TRUE
@@ -77,6 +77,9 @@ select_partners <- function(ppl, calc_dyad_score = calc_dyad_score_random) {
   repro_men <- which(ppl$to_reproduce & !ppl$female)
   n_repro_men <- length(repro_men)
   if (n_repro_women > 0 & n_repro_men > 0) {
+    # scramble order to prevent order effects
+    repro_women <- sample_safe(repro_women)
+    repro_men <- sample_safe(repro_men)
     if (any(ppl$is_present[c(repro_women, repro_men)] == FALSE)) stop("reproductive people cannot be missing")
     if (any(ppl$is_alive[c(repro_women, repro_men)] == FALSE)) stop("reproductive people cannot be dead")
     dyad_scores <- matrix(NA, nrow = n_repro_women, ncol = n_repro_men)

@@ -23,6 +23,7 @@ test_that("inspect_ppl works", {
 
   expect_silent(inspect_ppl(test))
 
+  # warning: current_partner column is missing
   test <- list(
     list(father = NA, mother = NA, to_reproduce = NA, female = TRUE, age = 1, date_of_birth = -5, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
     list(father = NA, mother = NA, to_reproduce = NA, female = TRUE, age = 2, date_of_birth = -3, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
@@ -31,10 +32,47 @@ test_that("inspect_ppl works", {
 
   expect_warning(inspect_ppl(test))
 
+  # error: age column is missing
   test <- list(
     list(father = NA, mother = NA, to_reproduce = NA, current_partner = NA, female = TRUE, date_of_birth = -5, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
     list(father = NA, mother = NA, to_reproduce = NA, current_partner = NA, female = TRUE, date_of_birth = -3, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
     list(father = NA, mother = NA, to_reproduce = NA, current_partner = NA, female = TRUE, date_of_birth = -3, date_of_death = 0, is_alive = FALSE, is_present = FALSE)
+  ) %>% bind_rows() %>% as.data.frame()
+
+  expect_error(inspect_ppl(test))
+
+  # error: female listed as father
+  test <- list(
+    list(father = 2, mother = NA, to_reproduce = NA, current_partner = NA, female = TRUE, age = 1, date_of_birth = -5, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
+    list(father = NA, mother = NA, to_reproduce = NA, current_partner = NA, female = TRUE, age = 2, date_of_birth = -3, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
+    list(father = NA, mother = NA, to_reproduce = NA, current_partner = NA, female = TRUE, age = 1, date_of_birth = -3, date_of_death = 0, is_alive = FALSE, is_present = FALSE)
+  ) %>% bind_rows() %>% as.data.frame()
+
+  expect_error(inspect_ppl(test))
+
+  # error: male listed as mother
+  test <- list(
+    list(father = NA, mother = 3, to_reproduce = NA, current_partner = NA, female = TRUE, age = 1, date_of_birth = -5, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
+    list(father = NA, mother = NA, to_reproduce = NA, current_partner = NA, female = TRUE, age = 2, date_of_birth = -3, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
+    list(father = NA, mother = NA, to_reproduce = NA, current_partner = NA, female = FALSE, age = 1, date_of_birth = -3, date_of_death = 0, is_alive = FALSE, is_present = FALSE)
+  ) %>% bind_rows() %>% as.data.frame()
+
+  expect_error(inspect_ppl(test))
+
+  # error: father id invalid
+  test <- list(
+    list(father = 4, mother = NA, to_reproduce = NA, current_partner = NA, female = TRUE, age = 1, date_of_birth = -5, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
+    list(father = NA, mother = NA, to_reproduce = NA, current_partner = NA, female = TRUE, age = 2, date_of_birth = -3, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
+    list(father = NA, mother = NA, to_reproduce = NA, current_partner = NA, female = TRUE, age = 1, date_of_birth = -3, date_of_death = 0, is_alive = FALSE, is_present = FALSE)
+  ) %>% bind_rows() %>% as.data.frame()
+
+  expect_error(inspect_ppl(test))
+
+  # error: mother id invalid
+  test <- list(
+    list(father = NA, mother = 4, to_reproduce = NA, current_partner = NA, female = TRUE, age = 1, date_of_birth = -5, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
+    list(father = NA, mother = NA, to_reproduce = NA, current_partner = NA, female = TRUE, age = 2, date_of_birth = -3, date_of_death = NA, is_alive = TRUE, is_present = TRUE),
+    list(father = NA, mother = NA, to_reproduce = NA, current_partner = NA, female = TRUE, age = 1, date_of_birth = -3, date_of_death = 0, is_alive = FALSE, is_present = FALSE)
   ) %>% bind_rows() %>% as.data.frame()
 
   expect_error(inspect_ppl(test))

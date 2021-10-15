@@ -15,7 +15,7 @@ add_immigrants <- function(ppl, current_tic, n_immigrants = 0,
 }
 
 add_offspring <- function(ppl, current_tic,
-  calc_age = calc_age_offspring, tic_length = 1) {
+  calc_age = calc_age_offspring, tic_length = 1, ...) {
 
   reproducing_women <- which(ppl$to_reproduce & ppl$female)
   if (length(reproducing_women) > 0) {
@@ -29,11 +29,11 @@ add_offspring <- function(ppl, current_tic,
 
   remaining_reproducing_men <- which(ppl$to_reproduce & ppl$male)
   if (length(remaining_reproducing_men) > 0) {
-    # currently one birth per woman
+    # currently one birth per man
     births <- generate_ppl(length(remaining_reproducing_men), ppl, calc_age)
     births$date_of_birth <- current_tic * (tic_length / 365) - births$age
     births$mother <- NA
-    births$father <- ppl$current_partner[remaining_reproducing_men]
+    births$father <- remaining_reproducing_men
     ppl <- bind_rows(ppl, births)
   }
 

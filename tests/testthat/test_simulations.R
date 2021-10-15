@@ -65,7 +65,8 @@ test_that("two hundred tics work", {
         select_fatalities(current_tic = today,
           calc_mortality = calc_mortality_basic, base_rate = 0.1) %>%
         select_emigrants() %>%
-        select_reproducers(current_tic = today) %>%
+        select_reproducers(current_tic = today,
+          calc_fertility = calc_fertility_basic) %>%
         select_partners() %>%
         add_offspring(current_tic = today) %>%
         add_immigrants(current_tic = today) %>%
@@ -86,7 +87,8 @@ test_that("simulations with default functions work", {
         select_fatalities(current_tic = i,
           calc_mortality = calc_mortality_basic, base_rate = 0.1) %>%
         select_emigrants() %>%
-        select_reproducers(current_tic = i) %>%
+        select_reproducers(current_tic = i,
+          calc_fertility = calc_fertility_basic) %>%
         select_partners() %>%
         add_offspring(current_tic = i) %>%
         add_immigrants(current_tic = i) %>%
@@ -103,7 +105,8 @@ test_that("simulations with default functions work", {
         select_fatalities(current_tic = i,
           calc_mortality = calc_mortality_basic, base_rate = 0.1) %>%
         select_emigrants() %>%
-        select_reproducers(current_tic = i) %>%
+        select_reproducers(current_tic = i,
+          calc_fertility = calc_fertility_basic) %>%
         select_partners() %>%
         add_offspring(current_tic = i) %>%
         add_immigrants(current_tic = i) %>%
@@ -120,7 +123,8 @@ test_that("simulations with default functions work", {
         select_fatalities(current_tic = i,
           calc_mortality = calc_mortality_basic, base_rate = 0.1) %>%
         select_emigrants() %>%
-        select_reproducers(current_tic = i) %>%
+        select_reproducers(current_tic = i,
+          calc_fertility = calc_fertility_basic) %>%
         select_partners() %>%
         add_offspring(current_tic = i) %>%
         add_immigrants(current_tic = i) %>%
@@ -137,7 +141,8 @@ test_that("simulations with default functions work", {
         select_fatalities(current_tic = i,
           calc_mortality = calc_mortality_basic, base_rate = 0.1) %>%
         select_emigrants() %>%
-        select_reproducers(current_tic = i) %>%
+        select_reproducers(current_tic = i,
+          calc_fertility = calc_fertility_basic) %>%
         select_partners() %>%
         add_offspring(current_tic = i) %>%
         add_immigrants(current_tic = i) %>%

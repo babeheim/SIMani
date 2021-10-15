@@ -25,8 +25,8 @@ test_that("add_immigrants works", {
 test_that("add_offspring works", {
 
   test <- list(
-    list(female = FALSE, mother = NA, father = NA),
-    list(female = FALSE, mother = NA, father = NA),
+    list(female = FALSE, to_reproduce = TRUE, current_partner = 3, mother = NA, father = NA),
+    list(female = FALSE, to_reproduce = TRUE, current_partner = 4, mother = NA, father = NA),
     list(female = TRUE, to_reproduce = TRUE, current_partner = 1, mother = NA, father = NA),
     list(female = TRUE, to_reproduce = TRUE, current_partner = 2, mother = NA, father = NA)
   ) %>% bind_rows() %>% as.data.frame()
