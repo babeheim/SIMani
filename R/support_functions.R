@@ -44,3 +44,13 @@ record_census <- function(censuses, ppl, current_tic, census_interval = 365) {
   }
   return(censuses)
 }
+
+bin_ages <- function(ages, age_bins) {
+  age_bins <- sort(unique(age_bins))
+  bindex <- cut(ages, age_bins, right = FALSE, labels = FALSE)
+  if (any(ages == max(age_bins))) {
+    bindex[ages == max(age_bins)] <- length(age_bins)
+  }
+  if (any(is.na(bindex))) stop("some ages not covered by the age bins")
+  return(age_bins[bindex])
+}

@@ -13,6 +13,22 @@ test_that("sample_safe works correctly", {
 })
 
 
+test_that("age binning works", {
+
+  expect_true(identical(bin_ages(1:5, 1:5), 1:5))
+  ages <- runif(100, 1, 5)
+  expect_true(all(bin_ages(ages, 1:5) == floor(ages)))
+
+  ages <- c(1, 2, 3)
+  age_bins <- c(1, 2)
+  expect_error(bin_ages(ages, age_bins))
+
+  ages <- c(1, 2, 3)
+  age_bins <- c(2, 3)
+  expect_error(bin_ages(ages, age_bins))
+
+})
+
 test_that("inspect_ppl works", {
 
   test <- list(

@@ -24,12 +24,28 @@ calc_dyad_score_age_hist_phi <- function(woman, man, ppl, trait) {
 ## generic event using a schedule
 
 calc_pr_event <- function(ppl, schedule, tic_length = 365, ...) {
+  if (hasName(schedule, "events_perthou_annual")) {
+    schedule$pr_event_annual <- schedule$events_perthou / 1000
+  }
+  if (!hasName(schedule, "pr_event_annual")) stop("schedule needs a pr_event_annual column")
+  # now match all columns between ppl and schedule
+  ppl$age <- bin_ages(ppl$age, schedule$age)
+
+  match_cols <- setdiff(colnames(schedule), c("pr_event_annual", "events_perthou_annual"))
+  if (!all(match_cols %in% colnames(ppl))) stop("some columns in the schedule are not present in ppl")
+
+  if (length(match_cols) == 1) {
+    ppl$key <- ppl[[match_cols]]
+    schedule$key <- schedule[[match_cols]]
+  }
+  if (length(match_cols) > 1) {
+    ppl$key <- apply(ppl[,match_cols], 1, function(z) paste(z, collapse = " "))
+    schedule$key <- apply(schedule[,match_cols], 1, function(z) paste(z, collapse = " "))
+  }
+  link <- match(ppl$key, schedule$key)
+
   years_per_tic <- (tic_length / 365)
-  schedule$pr_event_annual <- schedule$events_perthou / 1000
   schedule$pr_event_per_tic <- schedule$pr_event_annual * years_per_tic
-  ppl$age_bins <- schedule$age[cut(ppl$age, schedule$age, right = FALSE, labels = FALSE)]
-  if (any(is.na(ppl$age_bins))) stop("some ppl ages not inside schedule boundaries")
-  link <- match(ppl$age_bins, schedule$age)
   pr_event_per_tic <- schedule$pr_event_per_tic[link]
   return(pr_event_per_tic)
 }

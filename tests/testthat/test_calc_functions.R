@@ -1,13 +1,13 @@
 
 test_that("calc_pr_event works", {
+
   ppl <- data.frame(age = c(15, 15, 15))
-  sch <- data.frame(age = 15:19, events_perthou = c(0, 10, 10, 1, 1))
+  sch <- data.frame(age = 15:19, events_perthou_annual = c(0, 10, 10, 1, 1))
   expect_true(all(calc_pr_event(ppl, sch) == 0))
 
-  # error: someone is outside the schedule
-  ppl <- data.frame(age = c(15, 19))
-  sch <- data.frame(age = 15:19, events_perthou = c(0, 10, 10, 1, 1))
-  expect_error(calc_pr_event(ppl, sch))
+  ppl <- data.frame(age = c(15, 15, 15), female = c(TRUE, TRUE, FALSE))
+  sch <- data.frame(age = c(15, 15), female = c(TRUE, FALSE), events_perthou_annual = c(0, 10))
+  expect_true(identical(calc_pr_event(ppl, sch), c(0, 0, 10)/1000))
 
 })
 
