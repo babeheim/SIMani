@@ -1,5 +1,4 @@
 
-# sample() when only one item in the bag
 sample_safe <- function(x, ...) {
   x[sample.int(length(x), ...)]
 }
