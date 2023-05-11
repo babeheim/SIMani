@@ -29,7 +29,7 @@ add_offspring <- function(ppl, current_tic,
 
   remaining_reproducing_men <- which(ppl$to_reproduce & !ppl$female & is.na(ppl$current_partner))
   if (length(remaining_reproducing_men) > 0) {
-    # currently one birth per man # BUG did it exclude men who have already repdoruced with their partner above?
+    # currently one birth per man
     births <- generate_ppl(length(remaining_reproducing_men), ppl, calc_age) 
     births$date_of_birth <- current_tic * (tic_length / 365) - births$age
     births$mother <- NA
