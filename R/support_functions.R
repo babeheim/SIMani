@@ -32,6 +32,12 @@ inspect_ppl <- function(ppl) {
   if (any(!is.na(ppl$mother) & !ppl$female[ppl$mother])) stop("some males listed as mothers!")
   if (any(is.na(ppl$date_of_birth))) stop("date_of_birth has missing values")
   if (any(is.na(ppl$is_alive))) stop("is_alive has missing values")
+
+  if (!all(is.na(ppl$current_partner))) {
+    if (any(duplicated(na.omit(ppl$current_partner)))) stop("current partners cannot appear more than once")
+    if (!all(ppl$is_alive[ppl$current_partner])) stop("current partners cannot be dead")
+    if (!all(ppl$is_present[ppl$current_partner])) stop("current partners cannot be dead")
+  }
 }
 
 record_census <- function(censuses, ppl, current_tic, census_interval = 365) {
