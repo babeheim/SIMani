@@ -1,6 +1,6 @@
 
 add_immigrants <- function(ppl, current_tic, n_immigrants = 0,
-  calc_age = calc_age_basic, tic_length = 1) {
+  calc_age = calc_age_basic, tic_length = 365) {
   # choose n_immigrants probabilistically
   n_immigrants <- n_immigrants + rpois(1, 3)
   if (n_immigrants > 0) {
@@ -15,7 +15,7 @@ add_immigrants <- function(ppl, current_tic, n_immigrants = 0,
 }
 
 add_offspring <- function(ppl, current_tic,
-  calc_age = calc_age_offspring, tic_length = 1, ...) {
+  calc_age = calc_age_offspring, tic_length = 365, ...) {
 
   reproducing_women <- which(ppl$to_reproduce & ppl$female)
   if (length(reproducing_women) > 0) {
