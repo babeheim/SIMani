@@ -58,7 +58,31 @@ test_that("select_fatalities works", {
 
 })
 
-
+test_that("mortality scenarios work", {
+  # everyone dies
+  ppl <- data.frame(age = round(runif(1000, 0, 100)))
+  ppl$is_alive <- TRUE
+  ppl$is_present <- TRUE
+  ppl <- select_fatalities(ppl, current_tic = 1, tic_length = 1, calc_mortality = calc_mortality_basic, base_rate = 1)
+  expect_true(!any(ppl$is_alive))
+  # no one dies
+  ppl <- data.frame(age = round(runif(1000, 0, 100)))
+  ppl$is_alive <- TRUE
+  ppl$is_present <- TRUE
+  ppl <- select_fatalities(ppl, current_tic = 1, tic_length = 1, calc_mortality = calc_mortality_basic, base_rate = 0)
+  expect_true(all(ppl$is_alive))
+  # usa-like mortality for random age
+  random_age <- sample(0:100, 1)
+  expected_rate_perthou <- calc_mortality_usa(data.frame(age = random_age)) * 1000
+  ppl <- data.frame(age = rep(random_age, 100000))
+  ppl$current_partner <- NA
+  ppl$date_of_death <- NA
+  ppl$is_alive <- TRUE
+  ppl$is_present <- TRUE
+  ppl <- select_fatalities(ppl, current_tic = 1, tic_length = 365, calc_mortality = calc_mortality_usa)
+  obs_rate_perthou <- sum(!ppl$is_alive) / 100
+  expect_true(abs(obs_rate_perthou - expected_rate_perthou) < 1)
+})
 
 test_that("select_partners works", {
 

@@ -162,11 +162,11 @@ test_that("realistic simulations work", {
     n_tics <- 365
     for (i in 1:n_tics) {
       pop %>%
-        update_age() %>%
-        select_fatalities(current_tic = i, calc_mortality = calc_mortality_usa) %>%
-        select_reproducers(current_tic = i, calc_fertility = calc_fertility_usa) %>%
+        update_age(tic_length = tic_length) %>%
+        select_fatalities(current_tic = i, calc_mortality = calc_mortality_usa, tic_length = tic_length) %>%
+        select_reproducers(current_tic = i, calc_fertility = calc_fertility_usa, tic_length = tic_length) %>%
         select_partners(calc_dyad_score = calc_dyad_score_age_hist) %>%
-        add_offspring(current_tic = i) %>%
+        add_offspring(current_tic = i, tic_length = tic_length) %>%
         identity() -> pop
     }
   })
