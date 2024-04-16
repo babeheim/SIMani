@@ -54,6 +54,7 @@ select_reproducers <- function(ppl, current_tic, manual = NULL,
   calc_fertility = calc_pr_event, tic_length = 365, ...) {
   reproducers <- integer(0)
   candidates <- which(ppl$is_alive & ppl$is_present & ppl$age >= 10 & ppl$age < 65)
+  candidates_partners <- ppl$current_partner[candidates]
   # select manually for testing
   if (!is.null(manual)) {
     if (!all(manual %in% candidates)) stop("only living, present adults can reproduce!")
@@ -63,7 +64,9 @@ select_reproducers <- function(ppl, current_tic, manual = NULL,
   if (length(candidates) > 0) {
     pr_reproduce <- calc_fertility(ppl = ppl[candidates,], ...)
     reproduced <- as.logical(rbinom(length(candidates), 1, pr_reproduce))
-    reproducers <- c(reproducers, candidates[reproduced])
+    reproducers <- c(reproducers, candidates[reproduced], na.omit(candidates_partners[reproduced]))
+    # a person could appear twice if they and their partner rolled a reproduce
+    reproducers <- unique(reproducers)
   }
   ppl$to_reproduce[reproducers] <- TRUE
   return(ppl)
